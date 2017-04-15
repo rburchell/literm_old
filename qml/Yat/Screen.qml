@@ -47,11 +47,11 @@ Yat.TerminalScreen {
         }
     }
     Shortcut {
-        sequence: "Ctrl+Shift+C"
+        sequence: StandardKey.Copy
         onActivated: screen.selection.sendToClipboard()
     }
     Shortcut {
-        sequence: "Ctrl+Shift+V"
+        sequence: StandardKey.Paste
         onActivated: screen.selection.pasteFromClipboard()
     }
 
