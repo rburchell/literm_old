@@ -22,6 +22,7 @@
 
 #include <fcntl.h>
 #include <poll.h>
+#include <errno.h>
 
 #ifdef LINUX
 #include <sys/epoll.h>
@@ -63,7 +64,24 @@ YatPty::YatPty()
         for (int i = 0; i < env_variables_size; i++) {
             ::putenv(env_variables[i]);
         }
-        ::execl("/bin/bash", "/bin/bash", "--login", (const char *) 0);
+
+        const char *sh;
+        const struct passwd *pw;
+        errno = 0;
+        if ((pw = getpwuid(getuid())) == NULL) {
+            if (errno)
+                qFatal("couldn't getpwuid: %s\n", strerror(errno));
+            else
+                qFatal("getpwuid passed, but you're a creepy ghost!");
+        }
+
+        if ((sh = getenv("SHELL")) == NULL) {
+            sh = pw->pw_shell[0] ? pw->pw_shell : "/bin/sh";
+        }
+
+        // ### might be nice to be able to specify a command-line override?
+
+        ::execl(sh, "--login", (const char *) 0);
         exit(0);
     }
 
