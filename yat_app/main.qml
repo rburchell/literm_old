@@ -21,7 +21,7 @@
 *
 *******************************************************************************/
 
-import QtQuick 2.0
+import QtQuick 2.5
 import QtQuick.Window 2.0
 import QtQuick.Controls 1.1
 
@@ -83,24 +83,21 @@ Window {
             set_current_terminal_active(tabView.currentIndex);
         }
 
-        Action {
-            id: newTabAction
-            shortcut: "Ctrl+Shift+T"
-            onTriggered: {
+        Shortcut {
+            sequence: "Ctrl+Shift+T"
+            onActivated: {
                 tabView.add_terminal();
             }
         }
-        Action {
-            id: nextTabAction
-            shortcut: "Ctrl+Shift+]"
-            onTriggered: {
+        Shortcut {
+            sequence: "Ctrl+Shift+]"
+            onActivated: {
                 tabView.currentIndex = (tabView.currentIndex + 1) % tabView.count;
             }
         }
-        Action {
-            id: previousTabAction
-            shortcut: "Ctrl+Shift+["
-            onTriggered: {
+        Shortcut {
+            sequence: "Ctrl+Shift+["
+            onActivated: {
                 if (tabView.currentIndex > 0) {
                     tabView.currentIndex--;
                 } else {
