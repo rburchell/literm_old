@@ -245,6 +245,11 @@ void Cursor::moveOrigin()
 
 void Cursor::moveBeginningOfLine()
 {
+    if (m_wrap_around && m_wrapped_line_count) {
+        qCDebug(lcCursor) << "fixing wrap " << m_wrapped_line_count;
+        new_ry() -= m_wrapped_line_count;
+        m_wrapped_line_count = 0;
+    }
     new_rx() = 0;
     notifyChanged();
 }
@@ -252,9 +257,11 @@ void Cursor::moveBeginningOfLine()
 void Cursor::moveUp(int lines)
 {
     int adjusted_new_y = this->adjusted_new_y();
+    qCDebug(lcCursor) << lines << adjusted_new_y << new_ry();
     if (!adjusted_new_y || !lines)
         return;
 
+    m_wrapped_line_count = 0;
     if (lines < adjusted_new_y) {
         new_ry() -= lines;
     } else {
@@ -266,9 +273,11 @@ void Cursor::moveUp(int lines)
 void Cursor::moveDown(int lines)
 {
     int bottom = adjusted_bottom();
+    qCDebug(lcCursor) << lines << bottom << new_ry();
     if (new_y() == bottom || !lines)
         return;
 
+    m_wrapped_line_count = 0;
     if (new_y() + lines <= bottom) {
         new_ry() += lines;
     } else {
@@ -323,6 +332,7 @@ void Cursor::move(int new_x, int new_y)
         new_y = adjusted_bottom();
     }
 
+    qCDebug(lcCursor) << new_x << new_y << this->new_x() << this->new_y();
     if (this->new_y() != new_y || this->new_x() != new_x) {
         m_new_position = QPoint(new_x, new_y);
         notifyChanged();
@@ -439,6 +449,7 @@ void Cursor::deleteCharacters(int characters)
 void Cursor::setWrapAround(bool wrap)
 {
     m_wrap_around = wrap;
+    m_wrapped_line_count = 0;
 }
 
 void Cursor::addAtCursor(const QByteArray &data, bool only_latin)
@@ -464,9 +475,12 @@ void Cursor::replaceAtCursor(const QByteArray &data, bool only_latin)
         auto diff = screen_data()->replace(m_new_position, text, m_current_text_style, only_latin);
         new_rx() += diff.character;
         new_ry() += diff.line;
+        if (m_wrap_around)
+            m_wrapped_line_count += diff.line;
     }
 
     if (new_y() >= m_screen_height) {
+        m_wrapped_line_count = 0;
         new_ry() = m_screen_height - 1;
     }
 
@@ -479,14 +493,19 @@ void Cursor::insertAtCursor(const QByteArray &data, bool only_latin)
     auto diff = screen_data()->insert(m_new_position, text, m_current_text_style, only_latin);
     new_rx() += diff.character;
     new_ry() += diff.line;
-    if (new_y() >= m_screen_height)
+    if (m_wrap_around)
+        m_wrapped_line_count += diff.line;
+    if (new_y() >= m_screen_height) {
+        m_wrapped_line_count = 0;
         new_ry() = m_screen_height - 1;
+    }
     if (new_x() >= m_screen_width)
         new_rx() = m_screen_width - 1;
 }
 
 void Cursor::lineFeed()
 {
+    m_wrapped_line_count = 0;
     if(new_y() >= bottom()) {
         screen_data()->insertLine(bottom(), top());
     } else {
@@ -497,6 +516,7 @@ void Cursor::lineFeed()
 
 void Cursor::reverseLineFeed()
 {
+    m_wrapped_line_count = 0;
     if (new_y() == top()) {
         scrollUp(1);
     } else {
@@ -528,6 +548,7 @@ void Cursor::resetScrollArea()
 
 void Cursor::dispatchEvents()
 {
+    qDebug() << m_position << m_new_position << m_content_height_changed;
     if (m_new_position != m_position|| m_content_height_changed) {
         bool emit_x_changed = m_new_position.x() != m_position.x();
         bool emit_y_changed = m_new_position.y() != m_position.y();
@@ -538,11 +559,13 @@ void Cursor::dispatchEvents()
             emit yChanged();
     }
 
+    qDebug() << m_new_visibillity << m_visible;
     if (m_new_visibillity != m_visible) {
         m_visible = m_new_visibillity;
         emit visibilityChanged();
     }
 
+    qDebug() << m_new_blinking << m_blinking;
     if (m_new_blinking != m_blinking) {
         m_blinking = m_new_blinking;
         emit blinkingChanged();
