@@ -33,7 +33,7 @@
 #include <QtCore/QLoggingCategory>
 
 
-Q_LOGGING_CATEGORY(lcParser, "yat.parser")
+Q_LOGGING_CATEGORY(lcParser, "yat.parser", QtWarningMsg)
 
 namespace CharacterSet {
 enum CharacterSet {

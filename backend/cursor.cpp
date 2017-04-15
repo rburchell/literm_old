@@ -29,7 +29,7 @@
 #include <QtCore/QLoggingCategory>
 #include <QTextCodec>
 
-Q_LOGGING_CATEGORY(lcCursor, "yat.cursor")
+Q_LOGGING_CATEGORY(lcCursor, "yat.cursor", QtDebugMsg)
 
 Cursor::Cursor(Screen* screen)
     : QObject(screen)
