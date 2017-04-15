@@ -58,6 +58,7 @@ Cursor::Cursor(Screen* screen)
     connect(screen, &Screen::dataWidthChanged, this, &Cursor::setScreenWidth);
     connect(screen, &Screen::dataHeightChanged, this, &Cursor::setScreenHeight);
     connect(screen, &Screen::contentHeightChanged, this, &Cursor::contentHeightChanged);
+    connect(colorPalette(), &ColorPalette::changed, this, &Cursor::resetColors);
 
     m_gl_text_codec = QTextCodec::codecForName("utf-8")->makeDecoder();
     m_gr_text_codec = QTextCodec::codecForName("utf-8")->makeDecoder();
@@ -155,10 +156,15 @@ void Cursor::setTextStyle(TextStyle::Style style, bool add)
     }
 }
 
-void Cursor::resetStyle()
+void Cursor::resetColors()
 {
     m_current_text_style.background = colorPalette()->defaultBackground().rgb();
     m_current_text_style.foreground = colorPalette()->defaultForeground().rgb();
+}
+
+void Cursor::resetStyle()
+{
+    resetColors();
     m_current_text_style.style = TextStyle::Normal;
 }
 

@@ -53,6 +53,7 @@ public:
     void setBlinking(bool blinking);
 
     void setTextStyle(TextStyle::Style style, bool add = true);
+    void resetColors();
     void resetStyle();
     TextStyle currentTextStyle() const;
 
