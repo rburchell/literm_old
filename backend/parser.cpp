@@ -583,9 +583,11 @@ void Parser::decodeCSI(uchar character)
                         handleDefaultParameters(1);
                         int move_to_pos_on_line = m_parameters.size() ? m_parameters.at(0) : 1;
                         m_screen->currentCursor()->moveToCharacter(move_to_pos_on_line - 1);
-                    }
                         break;
+                    }
                     case FinalBytesNoIntermediate::CUP:
+                    case FinalBytesNoIntermediate::HVP: {
+                        Q_ASSERT(m_parameters.size() <= 2);
                         handleDefaultParameters(1);
                         if (!m_parameters.size()) {
                             m_screen->currentCursor()->moveOrigin();
@@ -595,6 +597,7 @@ void Parser::decodeCSI(uchar character)
                                 m_screen->currentCursor()->move(m_parameters.at(0) - 1, 0);
                         }
                         break;
+                    }
                     case FinalBytesNoIntermediate::CHT:
                         qCWarning(lcParser) << "unhandled CSI" << FinalBytesNoIntermediate::FinalBytesNoIntermediate(character);
                         break;
@@ -692,18 +695,6 @@ void Parser::decodeCSI(uchar character)
                     case FinalBytesNoIntermediate::VPR:
                         qCWarning(lcParser) << "unhandled CSI" << FinalBytesNoIntermediate::FinalBytesNoIntermediate(character);
                         break;
-                    case FinalBytesNoIntermediate::HVP: {
-                        Q_ASSERT(m_parameters.size() <= 2);
-                        handleDefaultParameters(1);
-                        if (!m_parameters.size()) {
-                            m_screen->currentCursor()->moveOrigin();
-                        } else if (m_parameters.size() == 2){
-                                m_screen->currentCursor()->move(m_parameters.at(1) - 1, m_parameters.at(0) - 1);
-                        } else if (m_parameters.size() == 1){
-                                m_screen->currentCursor()->move(m_parameters.at(0) - 1, 0);
-                        }
-                        break;
-                    }
                     case FinalBytesNoIntermediate::TBC:
                         if (!m_parameters.size() || m_parameters.at(0) == 0) {
                             m_screen->currentCursor()->removeTabStop();
