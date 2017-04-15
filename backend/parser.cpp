@@ -709,9 +709,9 @@ void Parser::decodeCSI(uchar character)
                         }
                         for (int i = 0; i < m_parameters.size(); i++) {
                             if (m_dec_mode) {
-                                setDecMode(m_parameters.at(i));
+                                handleDecMode(m_parameters.at(i), true);
                             } else {
-                                setMode(m_parameters.at(i));
+                                handleMode(m_parameters.at(i), true);
                             }
                         }
                         break;
@@ -727,9 +727,9 @@ void Parser::decodeCSI(uchar character)
                         }
                         for (int i = 0; i < m_parameters.size(); i++) {
                             if (m_dec_mode) {
-                                resetDecMode(m_parameters.at(i));
+                                handleDecMode(m_parameters.at(i), false);
                             } else {
-                                resetMode(m_parameters.at(i));
+                                handleMode(m_parameters.at(i), false);
                             }
                         }
 
@@ -916,16 +916,19 @@ void Parser::decodeFontSize(uchar character)
     tokenFinished();
 }
 
-void Parser::setMode(int mode)
+void Parser::handleMode(int mode, bool set)
 {
     switch(mode) {
 //Guarded area transfer           GATM*   1
 //Keyboard action                 KAM     2
 //Control representation          CRM†    3
 //Insert/replace                  IRM     4
-        case 4:
+    case 4:
+        if (set)
             m_screen->currentCursor()->setInsertMode(Cursor::Insert);
-            break;
+        else
+            m_screen->currentCursor()->setInsertMode(Cursor::Replace);
+        break;
 //Status reporting transfer       SRTM*   5
 //Vertical editing                VEM*    7
 //Horizontal editing              HEM*    10
@@ -939,47 +942,73 @@ void Parser::setMode(int mode)
 //Tabulation stop                 TSM*    18
 //Editing boundary                EBM*    19
 //Line feed/new line              LNM     20
-        case 20:
+    case 20:
+        if (set)
             m_lnm_mode_set = true;
-            break;
-        default:
-            qCWarning(lcParser) << "Unhandled setMode" << mode;
-            break;
+        else
+            m_lnm_mode_set = false;
+        break;
+    default:
+        qCWarning(lcParser) << "Unhandled mode" << mode;
+        break;
     }
 }
 
-void Parser::setDecMode(int mode)
+void Parser::handleDecMode(int mode, bool set)
 {
 //taken from http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
     switch (mode) {
 //1 -> Application Cursor Keys (DECCKM).
     case 1:
-        m_screen->setApplicationCursorKeysMode(true);
+        if (set)
+            m_screen->setApplicationCursorKeysMode(true);
+        else
+            m_screen->setApplicationCursorKeysMode(false);
         break;
 //2 -> Designate USASCII for character sets G0-G3 (DECANM), and set VT100 mode.
 //3 -> 132 Column Mode (DECCOLM).
     case 3:
-        m_screen->emitRequestWidth(132);
-        m_screen->emitRequestHeight(24);
-        m_screen->clear();
-        m_screen->currentCursor()->moveOrigin();
-        m_screen->currentCursor()->resetScrollArea();
+        if (set) {
+            m_screen->emitRequestWidth(132);
+            m_screen->emitRequestHeight(24);
+            m_screen->clear();
+            m_screen->currentCursor()->moveOrigin();
+            m_screen->currentCursor()->resetScrollArea();
+        } else {
+            m_screen->emitRequestWidth(80);
+            m_screen->emitRequestHeight(24);
+            m_screen->clear();
+            m_screen->currentCursor()->moveOrigin();
+            m_screen->currentCursor()->resetScrollArea();
+        }
         break;
 //4 -> Smooth (Slow) Scroll (DECSCLM).
     case 4:
-        m_screen->setFastScroll(false);
+        if (set)
+            m_screen->setFastScroll(false);
+        else
+            m_screen->setFastScroll(true);
         break;
 //5 -> Reverse Video (DECSCNM).
     case 5:
-        m_screen->colorPalette()->setInverseDefaultColors(true);
+        if (set)
+            m_screen->colorPalette()->setInverseDefaultColors(true);
+        else
+            m_screen->colorPalette()->setInverseDefaultColors(false);
         break;
 //6 -> Origin Mode (DECOM).
     case 6:
-        m_screen->currentCursor()->setOriginAtMargin(true);
+        if (set)
+            m_screen->currentCursor()->setOriginAtMargin(true);
+        else
+            m_screen->currentCursor()->setOriginAtMargin(false);
         break;
 //7 -> Wraparound Mode (DECAWM).
     case 7:
-        m_screen->currentCursor()->setWrapAround(true);
+        if (set)
+            m_screen->currentCursor()->setWrapAround(true);
+        else
+            m_screen->currentCursor()->setWrapAround(false);
         break;
 
 //8 -> Auto-repeat Keys (DECARM).
@@ -987,13 +1016,19 @@ void Parser::setDecMode(int mode)
 //10 -> Show toolbar (rxvt).
 //12 -> Start Blinking Cursor (att610).
     case 12:
-        m_screen->currentCursor()->setBlinking(true);
+        if (set)
+            m_screen->currentCursor()->setBlinking(true);
+        else
+            m_screen->currentCursor()->setBlinking(false);
         break;
 //18 -> Print form feed (DECPFF).
 //19 -> Set print extent to full screen (DECPEX).
 //25 -> Show Cursor (DECTCEM).
     case 25:
-        m_screen->currentCursor()->setVisible(true);
+        if (set)
+            m_screen->currentCursor()->setVisible(true);
+        else
+            m_screen->currentCursor()->setVisible(false);
         break;
 //30 -> Show scrollbar (rxvt).
 //35 -> Enable font-shifting functions (rxvt).
@@ -1006,7 +1041,10 @@ void Parser::setDecMode(int mode)
 //46 -> Start Logging. This is normally disabled by a compile-time option.
 //47 -> Use Alternate Screen Buffer. (This may be disabled by the titeInhibit resource).
     case 47:
-        m_screen->useAlternateScreenBuffer();
+        if (set)
+            m_screen->useAlternateScreenBuffer();
+        else
+            m_screen->useNormalScreenBuffer();
         break;
 //66 -> Application keypad (DECNKM).
 //67 -> Backarrow key sends backspace (DECBKM).
@@ -1034,16 +1072,27 @@ void Parser::setDecMode(int mode)
 //1043 -> Enable raising of the window when Control-G is received. (enables the popOnBell resource).
 //1047 -> Use Alternate Screen Buffer. (This may be disabled by the titeInhibit resource).
     case 1047:
-        m_screen->useAlternateScreenBuffer();
+        if (set)
+            m_screen->useAlternateScreenBuffer();
+        else
+            m_screen->useNormalScreenBuffer();
         break;
 //1048 -> Save cursor as in DECSC. (This may be disabled by the titeInhibit resource).
     case 1048:
-        m_screen->saveCursor();
+        if (set)
+            m_screen->saveCursor();
+        else
+            m_screen->restoreCursor();
         break;
 //1049 -> Save cursor as in DECSC and use Alternate Screen Buffer, clearing it first. (This may be disabled by the titeInhibit resource). This combines the effects of the 1047 and 1048 modes. Use this with terminfo-based applications rather than the 47 mode.
     case 1049:
-        m_screen->saveCursor();
-        m_screen->useAlternateScreenBuffer();
+        if (set) {
+            m_screen->saveCursor();
+            m_screen->useAlternateScreenBuffer();
+        } else {
+            m_screen->restoreCursor();
+            m_screen->useNormalScreenBuffer();
+        }
         break;
 //1050 -> Set terminfo/termcap function-key mode.
 //1051 -> Set Sun function-key mode.
@@ -1053,147 +1102,7 @@ void Parser::setDecMode(int mode)
 //1061 -> Set VT220 keyboard emulation.
 //2004 -> Set bracketed paste mode
     default:
-        qCWarning(lcParser) << "Unhandled setDecMode" << mode;
-    }
-}
-
-void Parser::resetMode(int mode)
-{
-    switch(mode) {
-//Guarded area transfer           GATM*   1
-//Keyboard action                 KAM     2
-//Control representation          CRM†    3
-//Insert/replace                  IRM     4
-        case 4:
-            m_screen->currentCursor()->setInsertMode(Cursor::Replace);
-            break;
-//Status reporting transfer       SRTM*   5
-//Vertical editing                VEM*    7
-//Horizontal editing              HEM*    10
-//Positioning unit                PUM*    11
-//Send/receive                    SRM     12
-//Format effector action          FEAM*   13
-//Format effector transfer        FETM*   14
-//Multiple area transfer          MATM*   15
-//Transfer termination            TTM*    16
-//Selected area transfer          SATM*   17
-//Tabulation stop                 TSM*    18
-//Editing boundary                EBM*    19
-//Line feed/new line              LNM     20
-        case 20:
-            m_lnm_mode_set = false;
-            break;
-        default:
-            qCWarning(lcParser) << "Unhandled resetMode" << mode;
-            break;
-    }
-}
-
-void Parser::resetDecMode(int mode)
-{
-    switch(mode) {
-//taken from http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
-//1 -> Normal Cursor Keys (DECCKM).
-        case 1:
-            m_screen->setApplicationCursorKeysMode(false);
-            break;
-//2 -> Designate VT52 mode (DECANM).
-//3 -> 80 Column Mode (DECCOLM).
-        case 3:
-            m_screen->emitRequestWidth(80);
-            m_screen->emitRequestHeight(24);
-            m_screen->clear();
-            m_screen->currentCursor()->moveOrigin();
-            m_screen->currentCursor()->resetScrollArea();
-            break;
-//4 -> Jump (Fast) Scroll (DECSCLM).
-        case 4:
-            m_screen->setFastScroll(true);
-            break;
-//5 -> Normal Video (DECSCNM).
-        case 5:
-            m_screen->colorPalette()->setInverseDefaultColors(false);
-            break;
-//6 -> Normal Cursor Mode (DECOM).
-        case 6:
-            m_screen->currentCursor()->setOriginAtMargin(false);
-            break;
-//7 -> No Wraparound Mode (DECAWM).
-        case 7:
-            m_screen->currentCursor()->setWrapAround(false);
-            break;
-//8 -> No Auto-repeat Keys (DECARM).
-//9 -> Don’t send Mouse X & Y on button press.
-//10 -> Hide toolbar (rxvt).
-//12 -> Stop Blinking Cursor (att610).
-        case 12:
-            m_screen->currentCursor()->setBlinking(false);
-            break;
-//18 -> Don’t print form feed (DECPFF).
-//19 -> Limit print to scrolling region (DECPEX).
-//25 -> Hide Cursor (DECTCEM).
-        case 25:
-            m_screen->currentCursor()->setVisible(false);
-            break;
-//30 -> Don’t show scrollbar (rxvt).
-//35 -> Disable font-shifting functions (rxvt).
-//40 -> Disallow 80 → 132 Mode.
-//41 -> No more(1) fix (see curses resource).
-//42 -> Disable Nation Replacement Character sets (DECNRCM).
-//44 -> Turn Off Margin Bell.
-//45 -> No Reverse-wraparound Mode.
-//46 -> Stop Logging. (This is normally disabled by a compile-time option).
-//47 -> Use Normal Screen Buffer.
-        case 47:
-            m_screen->useNormalScreenBuffer();
-            break;
-//66 -> Numeric keypad (DECNKM).
-//67 -> Backarrow key sends delete (DECBKM).
-//69 -> Disable left and right margin mode (DECLRMM), VT420 and up.
-//95 -> Clear screen when DECCOLM is set/reset (DECNCSM), VT510 and up.
-//1000 -> Don’t send Mouse X & Y on button press and release. See the section Mouse Tracking.
-//1001 -> Don’t use Hilite Mouse Tracking.
-//1002 -> Don’t use Cell Motion Mouse Tracking.
-//1003 -> Don’t use All Motion Mouse Tracking.
-//1004 -> Don’t send FocusIn/FocusOut events.
-//1005 -> Disable UTF-8 Mouse Mode.
-//1006 -> Disable SGR Mouse Mode.
-//1007 -> Disable Alternate Scroll Mode.
-//1010 -> Don’t scroll to bottom on tty output (rxvt).
-//1015 -> Disable urxvt Mouse Mode.
-//1011 -> Don’t scroll to bottom on key press (rxvt).
-//1034 -> Don’t interpret "meta" key. (This disables the eightBitInput resource).
-//1035 -> Disable special modifiers for Alt and NumLock keys. (This disables the numLock resource).
-//1036 -> Don’t send ESC when Meta modifies a key. (This disables the metaSendsEscape resource).
-//1037 -> Send VT220 Remove from the editing-keypad Delete key.
-//1039 -> Don’t send ESC when Alt modifies a key. (This disables the altSendsEscape resource).
-//1040 -> Do not keep selection when not highlighted. (This disables the keepSelection resource).
-//1041 -> Use the PRIMARY selection. (This disables the selectToClipboard resource).
-//1042 -> Disable Urgency window manager hint when Control-G is received. (This disables the bellIsUrgent resource).
-//1043 -> Disable raising of the window when Control-G is received. (This disables the popOnBell resource).
-//1047 -> Use Normal Screen Buffer, clearing screen first if in the Alternate Screen. (This may be disabled by the titeInhibit resource).
-    case 1047:
-            m_screen->useNormalScreenBuffer();
-            break;
-//1048 -> Restore cursor as in DECRC. (This may be disabled by the titeInhibit resource).
-    case 1048:
-            m_screen->restoreCursor();
-            break;
-//1049 -> Use Normal Screen Buffer and restore cursor as in DECRC. (This may be disabled by the titeInhibit resource). This combines the effects of the 1047 and 1048 modes. Use this with terminfo-based applications rather than the 47 mode.
-    case 1049:
-            m_screen->restoreCursor();
-            m_screen->useNormalScreenBuffer();
-            break;
-//1050 -> Reset terminfo/termcap function-key mode.
-//1051 -> Reset Sun function-key mode.
-//1052 -> Reset HP function-key mode.
-//1053 -> Reset SCO function-key mode.
-//1060 -> Reset legacy keyboard emulation (X11R6).
-//1061 -> Reset keyboard emulation to Sun/PC style.
-//2004 -> Reset bracketed paste mode
-    default:
-        qCWarning(lcParser) << "Unhandled resetDecMode" << mode;
-        break;
+        qCWarning(lcParser) << "Unhandled DecMode " << mode;
     }
 }
 

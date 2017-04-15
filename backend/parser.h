@@ -69,10 +69,8 @@ private:
     void decodeCharacterSet(uchar character);
     void decodeFontSize(uchar character);
 
-    void setMode(int mode);
-    void setDecMode(int mode);
-    void resetMode(int mode);
-    void resetDecMode(int mode);
+    void handleMode(int mode, bool set);
+    void handleDecMode(int mode, bool set);
 
     void handleSGR();
     int handleXtermColor(int param, int i);
