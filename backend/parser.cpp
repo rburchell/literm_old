@@ -918,6 +918,7 @@ void Parser::decodeFontSize(uchar character)
 
 void Parser::handleMode(int mode, bool set)
 {
+    qCDebug(lcParser) << "Mode " << mode << set;
     switch(mode) {
 //Guarded area transfer           GATM*   1
 //Keyboard action                 KAM     2
@@ -956,6 +957,7 @@ void Parser::handleMode(int mode, bool set)
 
 void Parser::handleDecMode(int mode, bool set)
 {
+    qCDebug(lcParser) << "DEC mode " << mode << set;
 //taken from http://invisible-island.net/xterm/ctlseqs/ctlseqs.html
     switch (mode) {
 //1 -> Application Cursor Keys (DECCKM).
