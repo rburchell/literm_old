@@ -29,6 +29,7 @@ Column {
     property alias count: _tabModel.count
     TabBar {
         id: tabBar
+        z: 1
         model: ListModel {
             id: _tabModel
         }
@@ -68,8 +69,9 @@ Column {
             return
         }
         var tabInstance = comp.createObject(tabContainer)
+        var title = tabInstance.title ? tabInstance.title : "Shell " + _tabModel.count
         tabInstance.titleChanged.connect(_updateTabTitle.bind(tabInstance))
-        _tabModel.append({ title: tabInstance.title, item: tabInstance })
+        _tabModel.append({ title: title, item: tabInstance })
         return _tabModel.get(_tabModel.count - 1)
     }
 

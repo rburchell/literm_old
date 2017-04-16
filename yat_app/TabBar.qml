@@ -161,8 +161,70 @@ Rectangle {
         MouseArea {
             anchors.fill: parent
             onClicked: {
-                for (var j = tabBar._maxVisibleTabs; j < tabBar.model.count; ++j) {
-                    console.log(j + " " + JSON.stringify(tabBar.model.get(j)))
+                pickerDialog.visible = true
+            }
+        }
+
+        Rectangle {
+            id: pickerDialog
+            visible: false
+            height: childrenRect.height
+            width: childrenRect.width
+            color: "white"
+            x: parent.width - (width + 10)
+            y: 10
+
+            Column {
+                Repeater {
+                    model: tabBar.model
+                    delegate: Rectangle {
+                        width: 250
+                        height: 25
+                        visible: index >= tabBar._maxVisibleTabs
+                        color: ma.containsMouse ? "#999999" : "white"
+
+                        MouseArea {
+                            id: ma
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: {
+                                tabBar.currentIndex = index
+                                pickerDialog.visible = false
+                            }
+                        }
+
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            width: parent.width - 20
+                            x: 10
+                            elide: Text.ElideRight
+                            text: model.title
+                        }
+                        Rectangle {
+                            color: "black"
+                            width: parent.width
+                            height: 1
+                            anchors.top: parent.top
+                        }
+                        Rectangle {
+                            color: "black"
+                            width: parent.width
+                            height: 1
+                            anchors.bottom: parent.bottom
+                        }
+                        Rectangle {
+                            color: "black"
+                            height: parent.height
+                            width: 1
+                            anchors.left: parent.left
+                        }
+                        Rectangle {
+                            color: "black"
+                            height: parent.height
+                            width: 1
+                            anchors.right: parent.right
+                        }
+                    }
                 }
             }
         }
