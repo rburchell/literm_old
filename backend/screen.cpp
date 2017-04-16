@@ -570,7 +570,8 @@ void Screen::sendKey(const QString &text, Qt::Key key, Qt::KeyboardModifiers mod
                 verifiedText = " ";
                 break;
             default:
-                return;
+                verifiedText = QChar(key);
+                break;
             }
         }
         QByteArray to_pty;
