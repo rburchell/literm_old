@@ -144,7 +144,6 @@ private:
     TextStyle m_current_text_style;
     QPoint m_position;
     QPoint m_new_position;
-    int m_wrapped_line_count = 0;
 
     int m_screen_width;
     int m_screen_height;

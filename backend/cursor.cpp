@@ -251,11 +251,6 @@ void Cursor::moveOrigin()
 
 void Cursor::moveBeginningOfLine()
 {
-    if (m_wrap_around && m_wrapped_line_count) {
-        qCDebug(lcCursor) << "fixing wrap " << m_wrapped_line_count;
-        new_ry() -= m_wrapped_line_count;
-        m_wrapped_line_count = 0;
-    }
     new_rx() = 0;
     notifyChanged();
 }
@@ -267,7 +262,6 @@ void Cursor::moveUp(int lines)
     if (!adjusted_new_y || !lines)
         return;
 
-    m_wrapped_line_count = 0;
     if (lines < adjusted_new_y) {
         new_ry() -= lines;
     } else {
@@ -283,7 +277,6 @@ void Cursor::moveDown(int lines)
     if (new_y() == bottom || !lines)
         return;
 
-    m_wrapped_line_count = 0;
     if (new_y() + lines <= bottom) {
         new_ry() += lines;
     } else {
@@ -455,7 +448,6 @@ void Cursor::deleteCharacters(int characters)
 void Cursor::setWrapAround(bool wrap)
 {
     m_wrap_around = wrap;
-    m_wrapped_line_count = 0;
 }
 
 void Cursor::addAtCursor(const QByteArray &data, bool only_latin)
@@ -481,12 +473,9 @@ void Cursor::replaceAtCursor(const QByteArray &data, bool only_latin)
         auto diff = screen_data()->replace(m_new_position, text, m_current_text_style, only_latin);
         new_rx() += diff.character;
         new_ry() += diff.line;
-        if (m_wrap_around)
-            m_wrapped_line_count += diff.line;
     }
 
     if (new_y() >= m_screen_height) {
-        m_wrapped_line_count = 0;
         new_ry() = m_screen_height - 1;
     }
 
@@ -499,19 +488,14 @@ void Cursor::insertAtCursor(const QByteArray &data, bool only_latin)
     auto diff = screen_data()->insert(m_new_position, text, m_current_text_style, only_latin);
     new_rx() += diff.character;
     new_ry() += diff.line;
-    if (m_wrap_around)
-        m_wrapped_line_count += diff.line;
-    if (new_y() >= m_screen_height) {
-        m_wrapped_line_count = 0;
+    if (new_y() >= m_screen_height)
         new_ry() = m_screen_height - 1;
-    }
     if (new_x() >= m_screen_width)
         new_rx() = m_screen_width - 1;
 }
 
 void Cursor::lineFeed()
 {
-    m_wrapped_line_count = 0;
     if(new_y() >= bottom()) {
         screen_data()->insertLine(bottom(), top());
     } else {
@@ -522,7 +506,6 @@ void Cursor::lineFeed()
 
 void Cursor::reverseLineFeed()
 {
-    m_wrapped_line_count = 0;
     if (new_y() == top()) {
         scrollUp(1);
     } else {
