@@ -197,7 +197,7 @@ Yat.TerminalScreen {
 
     function setTerminalHeight(explicitHeight) {
         if (fontHeight > 0 || explicitHeight) {
-            var pty_height = explicitHeight ? explicitWidth : Math.floor(height / fontHeight);
+            var pty_height = explicitHeight ? explicitHeight : Math.floor(height / fontHeight);
             flickable.height = pty_height * fontHeight;
             if (!explicitHeight)
                 screen.height = pty_height;
