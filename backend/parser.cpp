@@ -661,8 +661,15 @@ void Parser::decodeCSI(uchar character)
                         Q_ASSERT(m_parameters.size() < 2);
                         int n_chars = m_parameters.size() ? m_parameters.at(0) : 1;
                         m_screen->currentCursor()->deleteCharacters(n_chars);
-                    }
                         break;
+                    }
+                    case FinalBytesNoIntermediate::ECH:{
+                        Q_ASSERT(m_parameters.size() < 2);
+                        int n_chars = m_parameters.size() ? m_parameters.at(0) : 1;
+                        QByteArray buf(n_chars, ' ');
+                        m_screen->currentCursor()->replaceAtCursor(buf, true);
+                        break;
+                    }
                     case FinalBytesNoIntermediate::SSE:
                     case FinalBytesNoIntermediate::CPR:
                     case FinalBytesNoIntermediate::SU:
@@ -670,7 +677,6 @@ void Parser::decodeCSI(uchar character)
                     case FinalBytesNoIntermediate::NP:
                     case FinalBytesNoIntermediate::PP:
                     case FinalBytesNoIntermediate::CTC:
-                    case FinalBytesNoIntermediate::ECH:
                     case FinalBytesNoIntermediate::CVT:
                     case FinalBytesNoIntermediate::CBT:
                     case FinalBytesNoIntermediate::SRS:
