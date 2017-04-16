@@ -28,6 +28,7 @@ import Yat 1.0 as Yat
 Yat.TerminalScreen {
     id: screenItem
 
+    property string title: screen.title
     property font font
     property real fontWidth: fontMetricText.paintedWidth
     property real fontHeight: fontMetricText.paintedHeight

@@ -1,4 +1,5 @@
 /*******************************************************************************
+* Copyright (C) 2017 Robin Burchell <robin+git@viroteck.net>
 * Copyright (c) 2013 Jørgen Lind
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,7 +24,6 @@
 
 import QtQuick 2.5
 import QtQuick.Window 2.0
-import QtQuick.Controls 1.1
 
 import Yat 1.0 as Yat
 
@@ -32,14 +32,10 @@ Window {
 
     TabView {
         id: tabView
-        frameVisible: false
         anchors.fill: parent
-        tabsVisible: count > 1
-        focus: true
 
         Component.onCompleted: {
             add_terminal();
-            set_current_terminal_active(0);
             terminalWindow.show();
         }
 
@@ -52,12 +48,10 @@ Window {
         function add_terminal()
         {
             var tab = tabView.addTab("", terminalScreenComponent);
-            tab.active = true;
-            tab.title = Qt.binding(function() { return tab.item.screen.title; } );
             tab.item.aboutToBeDestroyed.connect(destroy_tab);
             tabView.currentIndex = tabView.count - 1;
-
         }
+
         function destroy_tab(screenItem) {
             if (tabView.count == 1) {
                 Qt.quit();
@@ -65,8 +59,6 @@ Window {
             }
             for (var i = 0; i < tabView.count; i++) {
                 if (tabView.getTab(i).item === screenItem) {
-                    if (i === 0)
-                        tabView.currentIndex = 1;
                     tabView.getTab(i).item.parent = null;
                     tabView.removeTab(i);
                     break;
@@ -83,10 +75,17 @@ Window {
             set_current_terminal_active(tabView.currentIndex);
         }
 
+        // TODO: shortcuts to switch tabs would be nice
         Shortcut {
-            sequence: "Ctrl+Shift+T"
+            sequence: "Ctrl+T"
             onActivated: {
                 tabView.add_terminal();
+            }
+        }
+        Shortcut {
+            sequence: "Ctrl+W"
+            onActivated: {
+                tabView.destroy_tab(tabView.getTab(tabView.currentIndex).item)
             }
         }
         Shortcut {
@@ -109,5 +108,4 @@ Window {
 
     width: 800
     height: 600
-
 }
