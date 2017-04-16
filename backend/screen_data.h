@@ -81,8 +81,6 @@ public:
 
     void ensureVisiblePages(int top_line);
 
-    Scrollback *scrollback() const;
-
     void sendSelectionToClipboard(const QPoint &start, const QPoint &end, QClipboard::Mode mode);
 
     inline std::list<Block *>::iterator it_for_row(int row);

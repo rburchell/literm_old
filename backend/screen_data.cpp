@@ -299,11 +299,6 @@ void ScreenData::ensureVisiblePages(int top_line)
     m_scrollback->ensureVisiblePages(top_line);
 }
 
-Scrollback *ScreenData::scrollback() const
-{
-    return m_scrollback;
-}
-
 void ScreenData::sendSelectionToClipboard(const QPoint &start, const QPoint &end, QClipboard::Mode mode)
 {
     if (start.y() < 0)
