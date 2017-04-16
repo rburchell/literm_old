@@ -166,13 +166,11 @@ Yat.TerminalScreen {
         }
 
         onRequestHeightChange: {
-            terminalWindow.height = newHeight * screenItem.fontHeight;
-            terminalWindow.contentItem.height = newHeight * screenItem.fontHeight;
+            setTerminalHeight(newHeight)
         }
 
         onRequestWidthChange: {
-            terminalWindow.width = newWidth * screenItem.fontWidth;
-            terminalWindow.contentItem.width = newWidth * screenItem.fontWidth;
+            setTerminalWidth(newWidth)
         }
     }
 
@@ -188,19 +186,21 @@ Yat.TerminalScreen {
         setTerminalHeight();
     }
 
-    function setTerminalWidth() {
-        if (fontWidth > 0) {
-            var pty_width = Math.floor(width / fontWidth);
+    function setTerminalWidth(explicitWidth) {
+        if (fontWidth > 0 || explicitWidth) {
+            var pty_width = explicitWidth ? explicitWidth : Math.floor(width / fontWidth);
             flickable.width = pty_width * fontWidth;
-            screen.width = pty_width;
+            if (!explicitWidth)
+                screen.width = pty_width;
         }
     }
 
-    function setTerminalHeight() {
-        if (fontHeight > 0) {
-            var pty_height = Math.floor(height / fontHeight);
+    function setTerminalHeight(explicitHeight) {
+        if (fontHeight > 0 || explicitHeight) {
+            var pty_height = explicitHeight ? explicitWidth : Math.floor(height / fontHeight);
             flickable.height = pty_height * fontHeight;
-            screen.height = pty_height;
+            if (!explicitHeight)
+                screen.height = pty_height;
         }
     }
 

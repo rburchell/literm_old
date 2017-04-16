@@ -981,13 +981,13 @@ void Parser::handleDecMode(int mode, bool set)
         // This seems like an exceptionally annoying feature. I don't want
         // things resizing my terminal for me. Leaving the code here in case
         // someone wants it, however. It's also useful for vttest.
-        if (0 && set) {
+        if (set) {
             m_screen->emitRequestWidth(132);
             m_screen->emitRequestHeight(24);
             m_screen->clear();
             m_screen->currentCursor()->moveOrigin();
             m_screen->currentCursor()->resetScrollArea();
-        } else if (0) {
+        } else {
             m_screen->emitRequestWidth(80);
             m_screen->emitRequestHeight(24);
             m_screen->clear();
