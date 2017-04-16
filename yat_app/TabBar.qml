@@ -27,7 +27,7 @@ Rectangle {
     id: tabBar
     color: "black"
     width: parent.width
-    height: _tabHeight
+    height: model.count > 1 ? _tabHeight : 0
     visible: height > 0
 
     // "Public" API
@@ -46,12 +46,7 @@ Rectangle {
     property int _animationDuration: 100
 
     // How high to make our tabs?
-    property int _tabHeight: model.count > 1 ? 25 : 0
-    Behavior on _tabHeight {
-        NumberAnimation {
-            duration: tabBar._animationDuration
-        }
-    }
+    property int _tabHeight: 25
 
     // Constraints for the size a tab can take up
     property int _maxTabWidth: 200
