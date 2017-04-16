@@ -355,7 +355,7 @@ void Cursor::moveToLine(int line)
     }
 
     if (line != new_y()) {
-        new_rx() = line;
+        new_ry() = line;
         notifyChanged();
     }
 }
