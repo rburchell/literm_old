@@ -405,6 +405,10 @@ void Parser::decodeC1_7bit(uchar character)
     case C1_7bit::OSC:
         m_decode_state = DecodeOSC;
         break;
+    case 'c':
+        qCWarning(lcParser) << "Unhandled hard reset " << C1_7bit::C1_7bit(character);
+        tokenFinished();
+        break;
     case C1_7bit::PM :
     case C1_7bit::APC:
     default:
@@ -744,6 +748,10 @@ void Parser::decodeCSI(uchar character)
                         qCDebug(lcParser) << "report";
                     case FinalBytesNoIntermediate::DAQ:
                     case FinalBytesNoIntermediate::Reserved0:
+                        // 'p':
+                        // DECSTR, DECRQM, DECSCL, ...?
+                        qCWarning(lcParser) << "Unhandled reset CSI" << FinalBytesNoIntermediate::FinalBytesNoIntermediate(character);
+                        break;
                     case FinalBytesNoIntermediate::Reserved1:
                         qCWarning(lcParser) << "Unhandled CSI" << FinalBytesNoIntermediate::FinalBytesNoIntermediate(character);
                         break;
