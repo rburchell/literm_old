@@ -98,6 +98,7 @@ void Scrollback::ensureVisibleLines(int top_line)
         qCDebug(lcScrollback) << "Releasing scrollback block starting " << line_no;
         b->releaseTextObjects();
         line_no += b->lineCount();
+        it++;
     }
 
     m_firstVisibleLine = top_line;
