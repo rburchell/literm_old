@@ -1,5 +1,7 @@
 <RCC>
     <qresource>
         <file>main.qml</file>
+        <file>TabBar.qml</file>
+        <file>TabView.qml</file>
     </qresource>
 </RCC>
