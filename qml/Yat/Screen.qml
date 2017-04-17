@@ -122,7 +122,7 @@ Yat.TerminalScreen {
         onContentYChanged: {
             if (!atYEnd) {
                 var top_line = Math.floor(Math.max(contentY,0) / screenItem.fontHeight);
-                screen.ensureVisiblePages(top_line);
+                screen.ensureVisibleLines(top_line);
             }
         }
     }

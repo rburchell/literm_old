@@ -79,7 +79,7 @@ public:
 
     Screen *screen() const;
 
-    void ensureVisiblePages(int top_line);
+    void ensureVisibleLines(int top_line);
 
     void sendSelectionToClipboard(const QPoint &start, const QPoint &end, QClipboard::Mode mode);
 

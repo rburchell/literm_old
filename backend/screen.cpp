@@ -373,9 +373,9 @@ bool Screen::applicationCursorKeyMode() const
     return m_application_cursor_key_mode;
 }
 
-void Screen::ensureVisiblePages(int top_line)
+void Screen::ensureVisibleLines(int top_line)
 {
-    currentScreenData()->ensureVisiblePages(top_line);
+    currentScreenData()->ensureVisibleLines(top_line);
 }
 
 static bool hasControll(Qt::KeyboardModifiers modifiers)

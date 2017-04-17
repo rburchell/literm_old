@@ -294,9 +294,9 @@ Screen *ScreenData::screen() const
     return m_screen;
 }
 
-void ScreenData::ensureVisiblePages(int top_line)
+void ScreenData::ensureVisibleLines(int top_line)
 {
-    m_scrollback->ensureVisiblePages(top_line);
+    m_scrollback->ensureVisibleLines(top_line);
 }
 
 void ScreenData::sendSelectionToClipboard(const QPoint &start, const QPoint &end, QClipboard::Mode mode)
