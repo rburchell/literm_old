@@ -80,6 +80,34 @@ Block *Scrollback::reclaimBlock()
 }
 
 // Make sure everything from top_line down one screen is visible.
+//
+// So the scrollback looks like this:
+//
+// 1: B
+// 2: VVVVVVVVVVV <-- m_firstVisibleLine
+// 3: B
+// 4: B
+// 5: B
+// 6: VVVVVVVVVVV <-- m_firstVisibleLine + screenHeight
+// 7: B
+//
+// ... where the range denoted by V's is the viewport.
+// When we get an ensureVisibleLines call, we want to discard the old part
+// of the viewport, and show the new part. So, for instance, given:
+//
+// 1: B
+// 2: VVVVVVVVVVV <-- m_firstVisibleLine
+// 3: B <- top_line
+// 4: B
+// 5: B
+// 6: VVVVVVVVVVV <-- m_firstVisibleLine + screenHeight
+// 7: B <- top_line + screenHeight
+//
+// ... we want to throw out 2, and bring in 7.
+//
+// Note, note, note! One must be careful with the concept of "lines". As
+// indicated in the diagrams above, we are dealing with blocks, which may
+// actually represent multiple lines on screen (soft-wrapped).
 void Scrollback::ensureVisibleLines(int top_line)
 {
     if (top_line < 0)
