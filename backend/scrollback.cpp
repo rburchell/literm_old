@@ -125,11 +125,13 @@ size_t Scrollback::height() const
 void Scrollback::setWidth(int width)
 {
     m_width = width;
+    m_height = 0;
 
     // Update length of all blocks so line numbers are correct.
     for (auto it = m_blocks.begin(); it != m_blocks.end(); ++it) {
         Block *b = *it;
         b->setWidth(m_width);
+        m_height += b->lineCount();
     }
 
     // And make sure the blocks visible are correct.
