@@ -111,6 +111,10 @@ void ScreenData::setWidth(int width)
 
     qCDebug(lcScreenData) << "After line resize, height is now: " << m_height;
 
+    qCDebug(lcScreenData) << "Setting scrollback width...";
+    m_scrollback->setWidth(width);
+    qCDebug(lcScreenData) << "Done setting scrollback width";
+
     int removed = 0;
     int reclaimed = 0;
     if (m_height > m_screen_height) {
@@ -123,10 +127,6 @@ void ScreenData::setWidth(int width)
         reclaimed = ensure_at_least_height(m_screen_height);
         qCDebug(lcScreenData) << "Reclaimed" << reclaimed << "lines from scrollback";
     }
-
-    qCDebug(lcScreenData) << "Setting scrollback width...";
-    m_scrollback->setWidth(width);
-    qCDebug(lcScreenData) << "Done setting scrollback width";
 
     emit dataWidthChanged(m_width, removed, reclaimed);
 }
