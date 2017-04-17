@@ -30,6 +30,7 @@ SOURCES += \
            $$PWD/controll_chars.cpp \
            $$PWD/parser.cpp \
            $$PWD/screen.cpp \
+           $$PWD/screen_keyboard.cpp \
            $$PWD/block.cpp \
            $$PWD/color_palette.cpp \
            $$PWD/text_style.cpp \
