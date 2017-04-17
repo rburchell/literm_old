@@ -537,7 +537,7 @@ void Cursor::resetScrollArea()
 
 void Cursor::dispatchEvents()
 {
-    qDebug() << m_position << m_new_position << m_content_height_changed;
+    qCDebug(lcCursor) << m_position << m_new_position << m_content_height_changed;
     if (m_new_position != m_position|| m_content_height_changed) {
         bool emit_x_changed = m_new_position.x() != m_position.x();
         bool emit_y_changed = m_new_position.y() != m_position.y();
@@ -548,13 +548,13 @@ void Cursor::dispatchEvents()
             emit yChanged();
     }
 
-    qDebug() << m_new_visibillity << m_visible;
+    qCDebug(lcCursor) << m_new_visibillity << m_visible;
     if (m_new_visibillity != m_visible) {
         m_visible = m_new_visibillity;
         emit visibilityChanged();
     }
 
-    qDebug() << m_new_blinking << m_blinking;
+    qCDebug(lcCursor) << m_new_blinking << m_blinking;
     if (m_new_blinking != m_blinking) {
         m_blinking = m_new_blinking;
         emit blinkingChanged();
