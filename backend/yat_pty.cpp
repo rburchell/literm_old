@@ -23,6 +23,9 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <uuid/uuid.h>
 
 #ifdef LINUX
 #include <sys/epoll.h>
