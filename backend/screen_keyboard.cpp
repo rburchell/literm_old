@@ -43,7 +43,7 @@
 #include <float.h>
 #include <cmath>
 
-Q_LOGGING_CATEGORY(lcKeyboard, "yat.keyboard", QtDebugMsg)
+Q_LOGGING_CATEGORY(lcKeyboard, "yat.keyboard", QtWarningMsg)
 
 static bool hasControll(Qt::KeyboardModifiers modifiers)
 {
