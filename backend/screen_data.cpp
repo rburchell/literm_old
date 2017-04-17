@@ -32,6 +32,9 @@
 
 #include <QtGui/QGuiApplication>
 #include <QtCore/QDebug>
+#include <QtCore/QLoggingCategory>
+
+Q_LOGGING_CATEGORY(lcScreenData, "yat.screen_data", QtDebugMsg)
 
 ScreenData::ScreenData(size_t max_scrollback, Screen *screen)
     : QObject(screen)
@@ -64,6 +67,7 @@ void ScreenData::setHeight(int height, int currentCursorLine)
     if (m_screen_height == height)
         return;
 
+    qCDebug(lcScreenData) << "Setting height to " << height << " was " << m_screen_height << " cursor line " << currentCursorLine;
     m_screen_height = height;
 
     int removed_beginning = 0;
@@ -76,13 +80,19 @@ void ScreenData::setHeight(int height, int currentCursorLine)
         const int remove_from_start = to_remove - remove_from_end;
 
         if (remove_from_end) {
+            qCDebug(lcScreenData) << "Want to remove " << remove_from_end << "lines at end";
             removed_end = remove_lines_from_end(remove_from_end);
+            qCDebug(lcScreenData) << "Removed" << removed_end << "lines at end";
         }
         if (remove_from_start) {
+            qCDebug(lcScreenData) << "Want to remove " << remove_from_start << "lines at start";
             removed_beginning = push_at_most_to_scrollback(remove_from_start);
+            qCDebug(lcScreenData) << "Removed" << removed_beginning << "lines at start";
         }
     } else {
+        qCDebug(lcScreenData) << "Reclaiming...";
         reclaimed = ensure_at_least_height(height);
+        qCDebug(lcScreenData) << "Reclaimed" << reclaimed << "lines from scrollback";
     }
 
     emit dataHeightChanged(m_screen_height, removed_beginning, reclaimed);
@@ -90,6 +100,7 @@ void ScreenData::setHeight(int height, int currentCursorLine)
 
 void ScreenData::setWidth(int width)
 {
+    qCDebug(lcScreenData) << "Setting width to" << width << "was" << m_width << " height now " << m_height;
     m_width = width;
 
     for (Block *block : m_screen_blocks) {
@@ -98,15 +109,24 @@ void ScreenData::setWidth(int width)
         m_height += block->lineCount() - before_count;
     }
 
+    qCDebug(lcScreenData) << "After line resize, height is now: " << m_height;
+
     int removed = 0;
     int reclaimed = 0;
     if (m_height > m_screen_height) {
-        removed = push_at_most_to_scrollback(m_height - m_screen_height);
+        int to_remove = m_height - m_screen_height;
+        qCDebug(lcScreenData) << "Pushing " << to_remove << " lines to scrollback";
+        removed = push_at_most_to_scrollback(to_remove);
+        qCDebug(lcScreenData) << "Pushed " << removed << " lines to scrollback";
     } else {
+        qCDebug(lcScreenData) << "Reclaiming...";
         reclaimed = ensure_at_least_height(m_screen_height);
+        qCDebug(lcScreenData) << "Reclaimed" << reclaimed << "lines from scrollback";
     }
 
+    qCDebug(lcScreenData) << "Setting scrollback width...";
     m_scrollback->setWidth(width);
+    qCDebug(lcScreenData) << "Done setting scrollback width";
 
     emit dataWidthChanged(m_width, removed, reclaimed);
 }
