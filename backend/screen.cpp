@@ -35,12 +35,15 @@
 
 #include <QtCore/QTimer>
 #include <QtCore/QSocketNotifier>
+#include <QtCore/QLoggingCategory>
 #include <QtGui/QGuiApplication>
 
 #include <QtCore/QDebug>
 
 #include <float.h>
 #include <cmath>
+
+Q_LOGGING_CATEGORY(lcScreen, "yat.screen", QtDebugMsg)
 
 Screen::Screen(QObject *parent)
     : QObject(parent)
@@ -80,7 +83,6 @@ Screen::Screen(QObject *parent)
 
 Screen::~Screen()
 {
-
     for(int i = 0; i < m_to_delete.size(); i++) {
         delete m_to_delete.at(i);
     }
@@ -103,6 +105,7 @@ QColor Screen::defaultBackgroundColor() const
 
 void Screen::emitRequestHeight(int newHeight)
 {
+    qCDebug(lcScreen) << "Requesting height " << newHeight;
     emit requestHeightChange(newHeight);
 }
 
@@ -112,6 +115,7 @@ void Screen::setHeight(int height)
     if (height == m_height)
         return;
 
+    qCDebug(lcScreen) << "Setting height " << height;
     m_height = height;
 
     m_primary_data->setHeight(height, currentCursor()->new_y());
@@ -135,6 +139,7 @@ int Screen::contentHeight() const
 
 void Screen::emitRequestWidth(int newWidth)
 {
+    qCDebug(lcScreen) << "Requesting width " << newWidth;
     emit requestWidthChange(newWidth);
 }
 
@@ -144,8 +149,10 @@ void Screen::setWidth(int width)
     if (width == m_width)
         return;
 
+    qCDebug(lcScreen) << "Width about to change to " << width;
     emit widthAboutToChange(width);
 
+    qCDebug(lcScreen) << "Setting width " << width;
     m_width = width;
 
     m_primary_data->setWidth(width);
@@ -165,6 +172,7 @@ int Screen::width() const
 void Screen::useAlternateScreenBuffer()
 {
     if (m_current_data == m_primary_data) {
+        qCDebug(lcScreen) << "Switching to alternate screen buffer";
         disconnect(m_primary_data, SIGNAL(contentHeightChanged()), this, SIGNAL(contentHeightChanged()));
         disconnect(m_primary_data, &ScreenData::contentModified, this, &Screen::contentModified);
         disconnect(m_primary_data, &ScreenData::dataHeightChanged, this, &Screen::dataHeightChanged);
@@ -182,6 +190,7 @@ void Screen::useAlternateScreenBuffer()
 void Screen::useNormalScreenBuffer()
 {
     if (m_current_data == m_alternate_data) {
+        qCDebug(lcScreen) << "Switching to normal screen buffer";
         disconnect(m_alternate_data, SIGNAL(contentHeightChanged()), this, SIGNAL(contentHeightChanged()));
         disconnect(m_alternate_data, &ScreenData::contentModified, this, &Screen::contentModified);
         disconnect(m_alternate_data, &ScreenData::dataHeightChanged, this, &Screen::dataHeightChanged);
@@ -211,6 +220,7 @@ void Screen::saveCursor()
         m_cursor_stack.last()->setVisible(false);
     m_cursor_stack << new_cursor;
     m_new_cursors << new_cursor;
+    qCDebug(lcScreen) << "Saved cursor, stack size: " << m_cursor_stack.size();
 }
 
 void Screen::restoreCursor()
@@ -220,6 +230,7 @@ void Screen::restoreCursor()
 
     m_delete_cursors.append(m_cursor_stack.takeLast());
     m_cursor_stack.last()->setVisible(true);
+    qCDebug(lcScreen) << "Restored cursor, stack size: " << m_cursor_stack.size();
 }
 
 void Screen::clearScreen()
@@ -304,6 +315,7 @@ void Screen::printScreen() const
 void Screen::scheduleEventDispatch()
 {
     if (!m_timer_event_id) {
+        qCDebug(lcScreen) << "Scheduling dispatch";
         m_timer_event_id = startTimer(1);
         m_time_since_initiated.restart();
     }
@@ -313,6 +325,7 @@ void Screen::scheduleEventDispatch()
 
 void Screen::dispatchChanges()
 {
+    qCDebug(lcScreen) << "Dispatching";
     if (m_old_current_data != m_current_data) {
         m_old_current_data->releaseTextObjects();
         m_old_current_data = m_current_data;
@@ -422,6 +435,7 @@ void Screen::paletteChanged()
 void Screen::timerEvent(QTimerEvent *)
 {
     if (m_timer_event_id && (m_time_since_parsed.elapsed() > 3 || m_time_since_initiated.elapsed() > 25)) {
+        qCDebug(lcScreen) << "Preparing to dispatch time_since_parsed " << m_time_since_parsed.elapsed() << " time_since_initiated " << m_time_since_initiated.elapsed();
         killTimer(m_timer_event_id);
         m_timer_event_id = 0;
         dispatchChanges();
