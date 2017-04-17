@@ -49,12 +49,14 @@ void Scrollback::addBlock(Block *block)
         return;
     }
 
+    qCDebug(lcScrollback) << "Adding block " << block;
     m_blocks.push_back(block);
     block->releaseTextObjects();
     m_block_count++;
     m_height += m_blocks.back()->lineCount();
 
     while (m_blocks.front() != block && m_height - m_blocks.front()->lineCount() >= m_max_size) {
+        qCDebug(lcScrollback) << "Popping excess block " << block;
         m_block_count--;
         m_height -= std::min(m_blocks.front()->lineCount(), (int)m_height);
         delete m_blocks.front();
@@ -68,6 +70,7 @@ Block *Scrollback::reclaimBlock()
         return nullptr;
 
     Block *last = m_blocks.back();
+    qCDebug(lcScrollback) << "Reclaiming block " << last;
     last->setWidth(m_width);
     m_block_count--;
     m_height -= last->lineCount();
