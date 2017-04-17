@@ -41,6 +41,7 @@ Selection::Selection(Screen *screen)
     , m_new_end_y(0)
     , m_end_y(0)
     , m_new_enable(false)
+    , m_enable(false)
 {
     connect(screen, &Screen::contentModified, this, &Selection::screenContentModified);
 
