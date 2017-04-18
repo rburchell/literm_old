@@ -1206,7 +1206,15 @@ void Parser::handleSGR()
 int Parser::handleXtermColor(int param, int i) {
     QRgb color;
     int ret = 0;
-    switch (m_parameters.at(++i)) {
+
+    ++i;
+
+    if (m_parameters.size() <= i) {
+        qCWarning(lcParser) << "Malformed xterm color sequence! " << m_parameters;
+        return ret;
+    }
+
+    switch (m_parameters.at(i)) {
         case 5:
             if (m_parameters.size() >= 3) {
                 color = m_screen->colorPalette()->xtermRgb(m_parameters.at(++i));
