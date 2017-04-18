@@ -57,7 +57,7 @@ void Utf8Decoder::addChar(uchar character)
     if (character < 0x80)
         return;
 
-    fprintf(stderr, "Character: 0x%x\n", character);
+    //fprintf(stderr, "Character: 0x%x\n", character);
     if (m_expected_length == 0) {
         //this is naive. There must be a faster way.
         if ((character & 0xfc) == 0xfc) {
@@ -81,9 +81,9 @@ void Utf8Decoder::addChar(uchar character)
             qWarning("Utf8Decoder: invalid decoder character");
         }
     } else {
-        fprintf(stderr, "Before 0x%x adding 0x%x pure 0x%x\n", m_unicode,(character & 0x3f), character);
+        //fprintf(stderr, "Before 0x%x adding 0x%x pure 0x%x\n", m_unicode,(character & 0x3f), character);
         m_unicode = (m_unicode << 6) |  (character & 0x3f);
-        fprintf(stderr, "After 0x%x\n", m_unicode);
+        //fprintf(stderr, "After 0x%x\n", m_unicode);
         m_length++;
     }
 }
