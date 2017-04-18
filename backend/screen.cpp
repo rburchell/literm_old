@@ -101,7 +101,11 @@ QFont Screen::font() const
     static QFont font;
     font.setPixelSize(14);
     font.setStyleHint(QFont::Monospace);
+#if defined(Q_OS_MAC)
     font.setFamily("Menlo");
+#else
+    font.setFamily("monospace");
+#endif
 
     QFontInfo fi(font);
     qDebug() << fi.family() << fi.exactMatch();
