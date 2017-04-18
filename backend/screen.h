@@ -36,6 +36,8 @@
 #include <QtCore/QStack>
 #include <QtCore/QElapsedTimer>
 
+#include <QtGui/QFont>
+
 class Block;
 class Cursor;
 class Text;
@@ -46,6 +48,7 @@ class Screen : public QObject
 {
     Q_OBJECT
 
+    Q_PROPERTY(QFont font READ font CONSTANT)
     Q_PROPERTY(int height READ height WRITE setHeight NOTIFY heightChanged)
     Q_PROPERTY(int width READ width WRITE setWidth NOTIFY widthChanged)
     Q_PROPERTY(int contentHeight READ contentHeight NOTIFY contentHeightChanged)
@@ -57,6 +60,8 @@ class Screen : public QObject
 public:
     explicit Screen(QObject *parent = 0);
     ~Screen();
+
+    QFont font() const;
 
     void emitRequestHeight(int newHeight);
     void setHeight(int height);

@@ -29,11 +29,9 @@ Yat.TerminalScreen {
     id: screenItem
 
     property string title: screen.title
-    property font font
     property real fontWidth: fontMetricText.paintedWidth
     property real fontHeight: fontMetricText.paintedHeight
 
-    font.family: screen.platformName != "cocoa" ? "monospace" : "menlo"
     anchors.fill: parent
     focus: true
 
@@ -72,7 +70,7 @@ Yat.TerminalScreen {
     Text {
         id: fontMetricText
         text: "B"
-        font: parent.font
+        font: parent.screen.font
         visible: false
         textFormat: Text.PlainText
     }
@@ -145,7 +143,7 @@ Yat.TerminalScreen {
                 {
                     "parent" : textContainer,
                     "objectHandle" : text,
-                    "font" : screenItem.font,
+                    "font" : screenItem.screen.font,
                     "fontWidth" : screenItem.fontWidth,
                     "fontHeight" : screenItem.fontHeight,
                 });
@@ -174,10 +172,10 @@ Yat.TerminalScreen {
         }
     }
 
-    onFontChanged: {
-        setTerminalHeight();
-        setTerminalWidth();
-    }
+    //onFontChanged: {
+    //    setTerminalHeight();
+    //    setTerminalWidth();
+    //}
 
     onWidthChanged: {
         setTerminalWidth();
