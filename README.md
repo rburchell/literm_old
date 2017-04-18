@@ -4,6 +4,9 @@ literm is a terminal emulator for Linux first and foremost, but it is also
 usable elsewhere (on Mac). The design goal is to be simplistic while still
 providing a reasonable amount of features.
 
+If you'd like to talk to people using literm, feel free to pop onto #literm on
+freenode.
+
 # technology
 
 literm is implemented using QML to provide a fast, and fluid user interface.
