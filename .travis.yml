@@ -1,0 +1,33 @@
+sudo: require
+dist: trusty
+
+language: cpp
+
+os:
+- linux
+- osx
+
+compiler:
+- gcc
+- clang
+
+cache:
+  directories:
+  - /var/cache/apt/archives/*.deb
+  - $HOME/Library/Caches/Homebrew
+
+before_install:
+- ./.travis/before_install.sh
+
+install:
+- ./.travis/install.sh
+
+script:
+- if [ "$TRAVIS_OS_NAME" = "linux" ]; then source /opt/qt58/bin/qt58-env.sh; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" -a "$CC" = "gcc" ]; then ./configure -spec linux-g++; fi
+- if [ "$TRAVIS_OS_NAME" = "linux" -a "$CC" = "clang" ]; then ./configure -spec linux-clang; fi
+- if [ "$TRAVIS_OS_NAME" = "osx" -a "$CC" = "gcc" ]; then ./configure -spec macx-g++; fi
+- if [ "$TRAVIS_OS_NAME" = "osx" -a "$CC" = "clang" ]; then ./configure -spec macx-clang; fi
+- make
+- if [ "$TRAVIS_OS_NAME" = "linux" ]; then xvfb-run -a -s "-screen 0 800x600x24" make check; fi
+- if [ "$TRAVIS_OS_NAME" = "osx" ]; then make check; fi
