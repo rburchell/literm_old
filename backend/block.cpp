@@ -95,11 +95,8 @@ void Block::deleteCharacters(int from, int to)
     const int size = (to + 1) - from;
     bool found = false;
 
-    int last_index = -1;
-
     for (int i = 0; i < m_style_list.size(); i++) {
         TextStyleLine &current_style = m_style_list[i];
-        last_index = i;
         if (found) {
             current_style.start_index -= removed;
             current_style.end_index -= removed;
@@ -133,14 +130,15 @@ void Block::deleteCharacters(int from, int to)
         }
     }
 
-    if (last_index >= 0) {
-        TextStyleLine &last_modified = m_style_list[last_index];
+    if (!m_style_list.isEmpty()) {
+        int lastIndex = m_style_list.size() - 1;
+        TextStyleLine &last_modified = m_style_list[lastIndex];
         TextStyle defaultStyle = m_screen->defaultTextStyle();
         if (last_modified.isCompatible(defaultStyle)) {
             last_modified.end_index += size;
             last_modified.text_dirty = true;
         } else {
-            m_style_list.insert(last_index + 1, TextStyleLine(defaultStyle,
+            m_style_list.insert(lastIndex + 1, TextStyleLine(defaultStyle,
                         last_modified.end_index + 1, last_modified.end_index + size));
         }
     }
