@@ -1,5 +1,6 @@
 CONFIG += testcase
 QT += testlib quick
+CONFIG -= app_bundle
 
 include(../../../backend/backend.pri)
 
