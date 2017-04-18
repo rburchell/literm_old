@@ -556,7 +556,6 @@ void Parser::decodeCSI(uchar character)
                     }
                         break;
                     case FinalBytesNoIntermediate::CUU: {
-                        Q_ASSERT(m_parameters.size() < 2);
                         int move_up = m_parameters.size() ? m_parameters.at(0) : 1;
                         m_screen->currentCursor()->moveUp(move_up ? move_up : 1);
                     }
@@ -567,13 +566,11 @@ void Parser::decodeCSI(uchar character)
                     }
                         break;
                     case FinalBytesNoIntermediate::CUF:{
-                        Q_ASSERT(m_parameters.size() < 2);
                         int move_right = m_parameters.size() ? m_parameters.at(0) : 1;
                         m_screen->currentCursor()->moveRight(move_right ? move_right : 1);
                     }
                         break;
                     case FinalBytesNoIntermediate::CUB: {
-                        Q_ASSERT(m_parameters.size() < 2);
                         int move_left = m_parameters.size() ? m_parameters.at(0) : 1;
                         m_screen->currentCursor()->moveLeft(move_left ? move_left : 1);
                     }
@@ -583,7 +580,6 @@ void Parser::decodeCSI(uchar character)
                         qCWarning(lcParser) << "unhandled CSI" << FinalBytesNoIntermediate::FinalBytesNoIntermediate(character);
                         break;
                     case FinalBytesNoIntermediate::CHA: {
-                        Q_ASSERT(m_parameters.size() < 2);
                         handleDefaultParameters(1);
                         int move_to_pos_on_line = m_parameters.size() ? m_parameters.at(0) : 1;
                         m_screen->currentCursor()->moveToCharacter(move_to_pos_on_line - 1);
@@ -591,7 +587,6 @@ void Parser::decodeCSI(uchar character)
                     }
                     case FinalBytesNoIntermediate::CUP:
                     case FinalBytesNoIntermediate::HVP: {
-                        Q_ASSERT(m_parameters.size() <= 2);
                         handleDefaultParameters(1);
                         if (!m_parameters.size()) {
                             m_screen->currentCursor()->moveOrigin();
@@ -658,13 +653,11 @@ void Parser::decodeCSI(uchar character)
                         qCWarning(lcParser) << "unhandled CSI" << FinalBytesNoIntermediate::FinalBytesNoIntermediate(character);
                         break;
                     case FinalBytesNoIntermediate::DCH:{
-                        Q_ASSERT(m_parameters.size() < 2);
                         int n_chars = m_parameters.size() ? m_parameters.at(0) : 1;
                         m_screen->currentCursor()->deleteCharacters(n_chars);
                         break;
                     }
                     case FinalBytesNoIntermediate::ECH:{
-                        Q_ASSERT(m_parameters.size() < 2);
                         int n_chars = m_parameters.size() ? m_parameters.at(0) : 1;
                         QByteArray buf(n_chars, ' ');
                         m_screen->currentCursor()->replaceAtCursor(buf, true);
@@ -696,7 +689,6 @@ void Parser::decodeCSI(uchar character)
                         }
                         break;
                     case FinalBytesNoIntermediate::VPA: {
-                        Q_ASSERT(m_parameters.size() < 2);
                         handleDefaultParameters(1);
                         int move_to_line = m_parameters.size() ? m_parameters.at(0) -1 : 0;
                         m_screen->currentCursor()->moveToLine(move_to_line);
