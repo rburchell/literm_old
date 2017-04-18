@@ -217,16 +217,16 @@ void Cursor::setTextBackgroundColor(QRgb color)
     m_current_text_style.background = color;
 }
 
-void Cursor::setTextForegroundColorIndex(ColorPalette::Color color)
+void Cursor::setTextForegroundColorIndex(ColorPalette::Color color, bool bold)
 {
     qCDebug(lcCursor) << color;
-    setTextForegroundColor(colorPalette()->color(color).rgb());
+    setTextForegroundColor(colorPalette()->color(color, bold).rgb());
 }
 
-void Cursor::setTextBackgroundColorIndex(ColorPalette::Color color)
+void Cursor::setTextBackgroundColorIndex(ColorPalette::Color color, bool bold)
 {
     qCDebug(lcCursor) << color;
-    setTextBackgroundColor(colorPalette()->color(color).rgb());
+    setTextBackgroundColor(colorPalette()->color(color, bold).rgb());
 }
 
 ColorPalette *Cursor::colorPalette() const

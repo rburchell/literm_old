@@ -1186,6 +1186,26 @@ void Parser::handleSGR()
             case 49: // Background default
                 m_screen->currentCursor()->setTextBackgroundColorIndex(ColorPalette::DefaultBackground);
                 break;
+            case 90:
+            case 91:
+            case 92:
+            case 93:
+            case 94:
+            case 95:
+            case 96:
+            case 97: // Bold/bright foreground colors.
+                m_screen->currentCursor()->setTextForegroundColorIndex(ColorPalette::Color(param - 90), true);
+                break;
+            case 100:
+            case 101:
+            case 102:
+            case 103:
+            case 104:
+            case 105:
+            case 106:
+            case 107: // Bold/bright background colors.
+                m_screen->currentCursor()->setTextBackgroundColorIndex(ColorPalette::Color(param - 100), true);
+                break;
             default:
                 qCWarning(lcParser) << "Unknown SGR" << param;
                 break;

@@ -60,8 +60,8 @@ public:
     ColorPalette *colorPalette() const;
     void setTextForegroundColor(QRgb color);
     void setTextBackgroundColor(QRgb color);
-    void setTextForegroundColorIndex(ColorPalette::Color color);
-    void setTextBackgroundColorIndex(ColorPalette::Color color);
+    void setTextForegroundColorIndex(ColorPalette::Color color, bool bold = false);
+    void setTextBackgroundColorIndex(ColorPalette::Color color, bool bold = false);
 
     QPoint position() const;
     int x() const;
