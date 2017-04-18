@@ -276,8 +276,14 @@ void ScreenData::dispatchLineEvents()
 {
     if (!m_block_count)
         return;
-    const int scrollback_height = m_scrollback->height();
-    int i = 0;
+
+    // We may have an initial multiline block that can't be pushed to scrollback
+    // (too big), but can't be fit on screen (also too big). For this case, we
+    // need to push the rendering of everything up.
+    const int underflow = m_height - m_screen_height;
+    const int scrollback_height = m_scrollback->height() + underflow;
+    int i = -underflow;
+
     for (auto it = m_screen_blocks.begin(); it != m_screen_blocks.end(); ++it) {
         int line = scrollback_height + i;
         (*it)->setLine(line);
