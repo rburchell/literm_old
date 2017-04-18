@@ -95,6 +95,7 @@ void ScreenData::setHeight(int height, int currentCursorLine)
         qCDebug(lcScreenData) << "Reclaimed" << reclaimed << "lines from scrollback";
     }
 
+    qCDebug(lcScreenData) << "dataHeightChanged" << m_screen_height << removed_beginning << reclaimed;
     emit dataHeightChanged(m_screen_height, removed_beginning, reclaimed);
 }
 
@@ -128,6 +129,7 @@ void ScreenData::setWidth(int width)
         qCDebug(lcScreenData) << "Reclaimed" << reclaimed << "lines from scrollback";
     }
 
+    qCDebug(lcScreenData) << "dataWidthChanged" << m_width << removed << reclaimed;
     emit dataWidthChanged(m_width, removed, reclaimed);
 }
 
@@ -554,14 +556,23 @@ int ScreenData::ensure_at_least_height(int height)
     int reclaimed = reclaim_at_least(to_grow);
 
     if (height > m_height) {
+        // Need to grow more than scrollback allows.
         int to_insert = height - m_height;
         for (int i = 0; i < to_insert; i++) {
             m_screen_blocks.push_back(new Block(m_screen));
         }
+        qCDebug(lcScreenData) << "Inserted " << to_insert << "new blocks";
         m_height += to_insert;
         m_block_count += to_insert;
+
+        // We are only interested in how much *scrollback* was reclaimed. Buffer
+        // growth is not of interest.
+        return reclaimed;
+    } else {
+        // We grew by "to_grow" lines, although a block may be more than this in
+        // height in the case of a multiline block.
+        return to_grow;
     }
-    return reclaimed;
 }
 
 int ScreenData::content_height_diff(size_t old_content_height)
