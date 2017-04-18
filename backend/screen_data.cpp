@@ -101,6 +101,9 @@ void ScreenData::setHeight(int height, int currentCursorLine)
 
 void ScreenData::setWidth(int width)
 {
+    if (width == m_width)
+        return;
+
     qCDebug(lcScreenData) << "Setting width to" << width << "was" << m_width << " height now " << m_height;
     m_width = width;
 
