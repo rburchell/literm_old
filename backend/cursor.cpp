@@ -112,6 +112,9 @@ void Cursor::setScreenWidth(int newWidth, int removedBeginning, int reclaimed)
         new_ry() = (*it)->screenIndex() + m_current_pos_in_block / newWidth;
         new_rx() = m_current_pos_in_block % newWidth;
     }
+    qCDebug(lcCursor) << "setScreenWidth: " << newWidth << removedBeginning << reclaimed << " new pos " << new_rx() << new_ry();
+    Q_ASSERT(new_rx() >= 0 && new_rx() < m_screen_width);
+    Q_ASSERT(new_ry() >= 0 && new_ry() < m_screen_height);
     m_resize_block = 0;
     m_current_pos_in_block = 0;
     notifyChanged();
@@ -126,6 +129,9 @@ void Cursor::setScreenHeight(int newHeight, int removedBeginning, int reclaimed)
     if (new_y() <= 0) {
         new_ry() = 0;
     }
+    qCDebug(lcCursor) << "setScreenHeight: " << newHeight << removedBeginning << reclaimed << " new pos " << new_rx() << new_ry();
+    Q_ASSERT(new_rx() >= 0 && new_rx() < m_screen_width);
+    Q_ASSERT(new_ry() >= 0 && new_ry() < m_screen_height);
 }
 
 bool Cursor::visible() const
