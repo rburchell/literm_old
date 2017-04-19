@@ -45,6 +45,10 @@ Column {
     }
 
     onCurrentIndexChanged: {
+        fixupVisibility()
+    }
+
+    function fixupVisibility() {
         for (var i = 0; i < tabContainer.children.length; ++i) {
             tabContainer.children[i].visible = i == currentIndex
         }
@@ -80,8 +84,17 @@ Column {
         if (obj.item && obj.item.parent)
             obj.item.destroy()
         _tabModel.remove(tabIndex)
-        if (tabIndex >= currentIndex)
-            currentIndex--
+        var ci = currentIndex
+        if (tabIndex >= ci)
+            ci--
+        if (ci < 0)
+            ci = 0
+        currentIndex = ci
+
+        // We must call this. If currentIndex hasn't changed (i.e. closing
+        // index 0), we need to fix up visibility to show what was formerly tab
+        // 1.
+        fixupVisibility(); 
     }
 
     function getTab(tabIndex) {
