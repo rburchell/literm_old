@@ -107,8 +107,8 @@ QFont Screen::font() const
     font.setFamily("monospace");
 #endif
 
-    QFontInfo fi(font);
-    qDebug() << fi.family() << fi.exactMatch();
+    //QFontInfo fi(font);
+    //qDebug() << fi.family() << fi.exactMatch();
     return font;
 }
 
