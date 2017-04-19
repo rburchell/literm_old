@@ -35,6 +35,9 @@ class tst_Parser : public QObject
 private slots:
     void setColor_data();
     void setColor();
+
+    void xtermIndexed_data();
+    void xtermIndexed();
 };
 
 void tst_Parser::setColor_data()
@@ -110,6 +113,95 @@ void tst_Parser::setColor()
 
     data = QString::asprintf("\033[%d;%dm", fgSGR, bgSGR).toUtf8();
     p.addData(data);
+
+    // Check expected state
+    QCOMPARE(QColor(s.currentCursor()->currentTextStyle().foreground), s.colorPalette()->color(fgColor, fgBold));
+    QCOMPARE(QColor(s.currentCursor()->currentTextStyle().background), s.colorPalette()->color(bgColor, bgBold));
+
+    // Check reset state
+    data = QString("\033[39;49m").toUtf8();
+    p.addData(data);
+
+    QCOMPARE(QColor(s.currentCursor()->currentTextStyle().foreground), s.colorPalette()->defaultForeground());
+    QCOMPARE(QColor(s.currentCursor()->currentTextStyle().background), s.colorPalette()->defaultBackground());
+}
+
+void tst_Parser::xtermIndexed_data()
+{
+    QTest::addColumn<int>("fgSGR");
+    QTest::addColumn<ColorPalette::Color>("fgColor");
+    QTest::addColumn<bool>("fgBold");
+
+    QTest::addColumn<int>("bgSGR");
+    QTest::addColumn<ColorPalette::Color>("bgColor");
+    QTest::addColumn<bool>("bgBold");
+
+    // Normal colors.
+    QTest::newRow("black/white")     << 0  << ColorPalette::Black   << false <<  7 << ColorPalette::White    << false;
+    QTest::newRow("red/cyan")        << 1  << ColorPalette::Red     << false <<  6 << ColorPalette::Cyan     << false;
+    QTest::newRow("green/magenta")   << 2  << ColorPalette::Green   << false <<  5 << ColorPalette::Magenta  << false;
+    QTest::newRow("yellow/blue")     << 3  << ColorPalette::Yellow  << false <<  4 << ColorPalette::Blue     << false;
+    QTest::newRow("blue/yellow")     << 4  << ColorPalette::Blue    << false <<  3 << ColorPalette::Yellow   << false;
+    QTest::newRow("magenta/green")   << 5  << ColorPalette::Magenta << false <<  2 << ColorPalette::Green    << false;
+    QTest::newRow("cyan/red")        << 6  << ColorPalette::Cyan    << false <<  1 << ColorPalette::Red      << false;
+    QTest::newRow("white/black")     << 7  << ColorPalette::White   << false <<  0 << ColorPalette::Black    << false;
+
+    // Bold FG, normal BG.
+    QTest::newRow("Bblack/white")    << 8  << ColorPalette::Black   << true <<   7 << ColorPalette::White    << false;
+    QTest::newRow("Bred/cyan")       << 9  << ColorPalette::Red     << true <<   6 << ColorPalette::Cyan     << false;
+    QTest::newRow("Bgreen/magenta")  << 10 << ColorPalette::Green   << true <<   5 << ColorPalette::Magenta  << false;
+    QTest::newRow("Byellow/blue")    << 11 << ColorPalette::Yellow  << true <<   4 << ColorPalette::Blue     << false;
+    QTest::newRow("Bblue/yellow")    << 12 << ColorPalette::Blue    << true <<   3 << ColorPalette::Yellow   << false;
+    QTest::newRow("Bmagenta/green")  << 13 << ColorPalette::Magenta << true <<   2 << ColorPalette::Green    << false;
+    QTest::newRow("Bcyan/red")       << 14 << ColorPalette::Cyan    << true <<   1 << ColorPalette::Red      << false;
+    QTest::newRow("Bwhite/black")    << 15 << ColorPalette::White   << true <<   0 << ColorPalette::Black    << false;
+
+    // Normal FG, bold BG.
+    QTest::newRow("black/Bwhite")    << 0  << ColorPalette::Black   << false <<  15 << ColorPalette::White   << true;
+    QTest::newRow("red/Bcyan")       << 1  << ColorPalette::Red     << false <<  14 << ColorPalette::Cyan    << true;
+    QTest::newRow("green/Bmagenta")  << 2  << ColorPalette::Green   << false <<  13 << ColorPalette::Magenta << true;
+    QTest::newRow("yellow/Bblue")    << 3  << ColorPalette::Yellow  << false <<  12 << ColorPalette::Blue    << true;
+    QTest::newRow("blue/Byellow")    << 4  << ColorPalette::Blue    << false <<  11 << ColorPalette::Yellow  << true;
+    QTest::newRow("magenta/Bgreen")  << 5  << ColorPalette::Magenta << false <<  10 << ColorPalette::Green   << true;
+    QTest::newRow("cyan/Bred")       << 6  << ColorPalette::Cyan    << false <<   9 << ColorPalette::Red     << true;
+    QTest::newRow("white/Bblack")    << 7  << ColorPalette::White   << false <<   8 << ColorPalette::Black   << true;
+
+    // Bold FG, bold BG.
+    QTest::newRow("Bblack/Bwhite")   << 8  << ColorPalette::Black   << true <<  15 << ColorPalette::White   << true;
+    QTest::newRow("Bred/Bcyan")      << 9  << ColorPalette::Red     << true <<  14 << ColorPalette::Cyan    << true;
+    QTest::newRow("Bgreen/Bmagenta") << 10 << ColorPalette::Green   << true <<  13 << ColorPalette::Magenta << true;
+    QTest::newRow("Byellow/Bblue")   << 11 << ColorPalette::Yellow  << true <<  12 << ColorPalette::Blue    << true;
+    QTest::newRow("Bblue/Byellow")   << 12 << ColorPalette::Blue    << true <<  11 << ColorPalette::Yellow  << true;
+    QTest::newRow("Bmagenta/Bgreen") << 13 << ColorPalette::Magenta << true <<  10 << ColorPalette::Green   << true;
+    QTest::newRow("Bcyan/Bred")      << 14 << ColorPalette::Cyan    << true <<  9  << ColorPalette::Red     << true;
+    QTest::newRow("Bwhite/Bblack")   << 15 << ColorPalette::White   << true <<  8  << ColorPalette::Black   << true;
+}
+
+// SGR 38/48, 5: indexed colors.
+// The first 0-7 are the standard terminal colors. The last 8-15 are the bright
+// (or bold) versions.
+void tst_Parser::xtermIndexed()
+{
+    QFETCH(int, fgSGR);
+    QFETCH(ColorPalette::Color, fgColor);
+    QFETCH(bool, fgBold);
+
+    QFETCH(int, bgSGR);
+    QFETCH(ColorPalette::Color, bgColor);
+    QFETCH(bool, bgBold);
+
+    Screen s;
+    Parser p(&s);
+
+    QByteArray data;
+
+    // Check default state
+    QCOMPARE(QColor(s.currentCursor()->currentTextStyle().foreground), s.colorPalette()->defaultForeground());
+    QCOMPARE(QColor(s.currentCursor()->currentTextStyle().background), s.colorPalette()->defaultBackground());
+
+    data = QString::asprintf("\033[38;5;%d;48;5;%dm", fgSGR, bgSGR).toUtf8();
+    p.addData(data);
+
 
     // Check expected state
     QCOMPARE(QColor(s.currentCursor()->currentTextStyle().foreground), s.colorPalette()->color(fgColor, fgBold));
