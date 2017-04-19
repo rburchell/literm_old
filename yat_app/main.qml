@@ -75,7 +75,77 @@ Window {
             set_current_terminal_active(tabView.currentIndex);
         }
 
-        // TODO: shortcuts to switch tabs would be nice
+        // hurgh, this is a bit ugly
+        Shortcut {
+            sequence: "Ctrl+1"
+            onActivated: {
+                if (tabView.count >= 2)
+                    tabView.currentIndex = 0 // yes, this is right. 0 indexed.
+            }
+        }
+        Shortcut {
+            sequence: "Ctrl+2"
+            onActivated: {
+                if (tabView.count >= 2)
+                    tabView.currentIndex = 1 // yes, this is right. 0 indexed.
+            }
+        }
+        Shortcut {
+            sequence: "Ctrl+3"
+            onActivated: {
+                if (tabView.count >= 3)
+                    tabView.currentIndex = 2 // yes, this is right. 0 indexed.
+            }
+        }
+        Shortcut {
+            sequence: "Ctrl+4"
+            onActivated: {
+                if (tabView.count >= 4)
+                    tabView.currentIndex = 3 // yes, this is right. 0 indexed.
+            }
+        }
+        Shortcut {
+            sequence: "Ctrl+5"
+            onActivated: {
+                if (tabView.count >= 5)
+                    tabView.currentIndex = 4 // yes, this is right. 0 indexed.
+            }
+        }
+        Shortcut {
+            sequence: "Ctrl+6"
+            onActivated: {
+                if (tabView.count >= 6)
+                    tabView.currentIndex = 5 // yes, this is right. 0 indexed.
+            }
+        }
+        Shortcut {
+            sequence: "Ctrl+7"
+            onActivated: {
+                if (tabView.count >= 7)
+                    tabView.currentIndex = 6 // yes, this is right. 0 indexed.
+            }
+        }
+        Shortcut {
+            sequence: "Ctrl+8"
+            onActivated: {
+                if (tabView.count >= 8)
+                    tabView.currentIndex = 7 // yes, this is right. 0 indexed.
+            }
+        }
+        Shortcut {
+            sequence: "Ctrl+9"
+            onActivated: {
+                if (tabView.count >= 9)
+                    tabView.currentIndex = 8 // yes, this is right. 0 indexed.
+            }
+        }
+        Shortcut {
+            sequence: "Ctrl+0"
+            onActivated: {
+                if (tabView.count >= 10)
+                    tabView.currentIndex = 9 // yes, this is right. 0 indexed.
+            }
+        }
         Shortcut {
             sequence: "Ctrl+T"
             onActivated: {
