@@ -215,9 +215,13 @@ void Block::replaceAtPos(int pos, const QString &text, const TextStyle &style, b
                         int old_end = current_style.end_index;
                         current_style.end_index = pos - 1;
                         current_style.text_dirty = true;
+
+                        // must copy here, as the following insert will invalidate current_style
+                        TextStyleLine newStyle(current_style, pos + text.size(), old_end);
                         m_style_list.insert(i+1, TextStyleLine(style,pos, pos + text.size() - 1));
+
                         if (pos + text.size() < m_text_line.size()) {
-                            m_style_list.insert(i+2, TextStyleLine(current_style,pos + text.size(), old_end));
+                            m_style_list.insert(i+2, TextStyleLine(newStyle, pos + text.size(), old_end));
                         }
                     }
                 }
@@ -294,10 +298,14 @@ void Block::insertAtPos(int pos, const QString &text, const TextStyle &style, bo
                 int old_end = current_style.end_index;
                 current_style.end_index = pos -1;
                 current_style.text_dirty = true;
+
+                // must copy here, as the following insert will invalidate current_style
+                int segment_end = std::min(m_text_line.size() -1, old_end + text.size());
+                TextStyleLine newStyle(current_style, pos + text.size(), segment_end);
                 m_style_list.insert(i+1, TextStyleLine(style, pos, pos + text.size() - 1));
+
                 if (pos + text.size() < m_text_line.size()) {
-                    int segment_end = std::min(m_text_line.size() -1, old_end + text.size());
-                    m_style_list.insert(i+2, TextStyleLine(current_style, pos + text.size(), segment_end));
+                    m_style_list.insert(i+2, newStyle);
                     i+=2;
                 } else {
                     i++;
