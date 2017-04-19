@@ -7,6 +7,18 @@ providing a reasonable amount of features.
 If you'd like to talk to people using literm, feel free to pop onto #literm on
 freenode.
 
+# status
+
+I wouldn't use this without a dose of caution on a regular basis yet. There are
+still crashes triggerable through escape codes (see
+[this bug](https://github.com/rburchell/literm/issues/11) for efforts ongoing to
+improve that situation), and a myriad of other issues, not to mention a dire
+lack of features.
+
+This having been said, feel free to give it a shot and file bugs - ideally with
+pull requests, but at the least with as much information about how to reproduce
+them as possible.
+
 # technology
 
 literm is implemented using QML to provide a fast, and fluid user interface.
