@@ -1230,6 +1230,7 @@ int Parser::handleXtermColor(int param, int i) {
         case 5:
             if (m_parameters.size() >= 3) {
                 int cidx = m_parameters.at(++i);
+                ret = 2;
                 if (cidx >= 16) {
                     color = m_screen->colorPalette()->xtermRgb(cidx);
                 } else if (cidx >= 8) {
@@ -1239,10 +1240,11 @@ int Parser::handleXtermColor(int param, int i) {
                     color = m_screen->colorPalette()->color(ColorPalette::Color(cidx), false).rgb();
                 } else {
                     qCWarning(lcParser) << "8-bit color bytes unexpected" << m_parameters;
+                    return ret;
                 }
-                ret = 2;
             } else {
                 qCWarning(lcParser) << "8-bit color bytes unexpected" << m_parameters;
+                return ret;
             }
             break;
         case 2:
@@ -1251,6 +1253,7 @@ int Parser::handleXtermColor(int param, int i) {
                 ret = 4;
             } else {
                 qCWarning(lcParser) << "24-bit color bytes unexpected" << m_parameters;
+                return ret;
             }
             break;
     }
