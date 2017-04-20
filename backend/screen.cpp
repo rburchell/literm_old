@@ -92,26 +92,6 @@ Screen::~Screen()
     delete m_alternate_data;
 }
 
-#include <QFontInfo>
-
-// Maybe this should be writable, when we have settings.
-// This will also need adjusting for DPI changes...
-QFont Screen::font() const
-{
-    static QFont font;
-    font.setPixelSize(14);
-    font.setStyleHint(QFont::Monospace);
-#if defined(Q_OS_MAC)
-    font.setFamily("Menlo");
-#else
-    font.setFamily("monospace");
-#endif
-
-    //QFontInfo fi(font);
-    //qDebug() << fi.family() << fi.exactMatch();
-    return font;
-}
-
 QColor Screen::defaultForegroundColor() const
 {
     return m_palette->normalColor(ColorPalette::DefaultForeground);

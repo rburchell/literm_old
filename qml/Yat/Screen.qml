@@ -29,8 +29,9 @@ Yat.TerminalScreen {
     id: screenItem
 
     property string title: screen.title
-    property real fontWidth: fontMetricText.paintedWidth
-    property real fontHeight: fontMetricText.paintedHeight
+    property alias font: fontMetricText.font
+    property real fontWidth: fontMetricText.averageCharacterWidth
+    property real fontHeight: fontMetricText.height
 
     anchors.fill: parent
     focus: true
@@ -64,15 +65,24 @@ Yat.TerminalScreen {
         if (event.text === "?") {
             screen.printScreen()
         }
+
+        //if (event.text === ">") {
+        //    font.pixelSize = font.pixelSize - 1
+        //    console.log("pixel size now " + font.pixelSize)
+        //}
+        //else if (event.text === "<") {
+        //    font.pixelSize = font.pixelSize + 1
+        //    console.log("pixel size now " + font.pixelSize)
+        //}
         screen.sendKey(event.text, event.key, event.modifiers);
     }
 
-    Text {
+    FontMetrics {
         id: fontMetricText
-        text: "B"
-        font: parent.screen.font
-        visible: false
-        textFormat: Text.PlainText
+        font {
+            family: screen.platformName != "cocoa" ? "monospace" : "menlo"
+            pixelSize: 15
+        }
     }
 
     Rectangle {
@@ -143,9 +153,9 @@ Yat.TerminalScreen {
                 {
                     "parent" : textContainer,
                     "objectHandle" : text,
-                    "font" : screenItem.screen.font,
-                    "fontWidth" : screenItem.fontWidth,
-                    "fontHeight" : screenItem.fontHeight,
+                    "font" : Qt.binding(function() { return screenItem.font; }),
+                    "fontWidth" : Qt.binding(function() { return screenItem.fontWidth; }),
+                    "fontHeight" : Qt.binding(function() { return screenItem.fontHeight; }),
                 });
         }
 
@@ -158,8 +168,8 @@ Yat.TerminalScreen {
                 {
                     "parent" : cursorContainer,
                     "objectHandle" : cursor,
-                    "fontWidth" : screenItem.fontWidth,
-                    "fontHeight" : screenItem.fontHeight,
+                    "fontWidth" : Qt.binding(function() { return screenItem.fontWidth; }),
+                    "fontHeight" : Qt.binding(function() { return screenItem.fontHeight; }),
                 })
         }
 
@@ -172,10 +182,10 @@ Yat.TerminalScreen {
         }
     }
 
-    //onFontChanged: {
-    //    setTerminalHeight();
-    //    setTerminalWidth();
-    //}
+    onFontChanged: {
+        setTerminalHeight();
+        setTerminalWidth();
+    }
 
     onWidthChanged: {
         setTerminalWidth();
