@@ -23,9 +23,9 @@
 
 import QtQuick 2.0
 
-import Yat 1.0
+import Yat 1.0 as Yat
 
-ObjectDestructItem {
+Yat.ObjectDestructItem {
     id: textItem
     property font font
     property real fontWidth
@@ -34,8 +34,8 @@ ObjectDestructItem {
     y: objectHandle.line * fontHeight;
     x: objectHandle.index * fontWidth;
 
-    width: textElement.paintedWidth
-    height: textElement.paintedHeight
+    width: objectHandle.text.length * fontWidth
+    height: fontHeight
 
     visible: objectHandle.visible
 
@@ -43,7 +43,7 @@ ObjectDestructItem {
         anchors.fill: parent
         color: objectHandle.backgroundColor
 
-        MonoText {
+        Text {
             id: textElement
             anchors.fill: parent
             text: objectHandle.text
@@ -52,10 +52,7 @@ ObjectDestructItem {
             font.pixelSize: textItem.font.pixelSize
             font.bold: objectHandle.bold
             font.underline: objectHandle.underline
-            latin: objectHandle.latin
 
-            onTextChanged: {
-            }
             SequentialAnimation {
                 running: objectHandle.blinking
                 loops: Animation.Infinite

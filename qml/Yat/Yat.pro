@@ -10,13 +10,11 @@ include(../../backend/backend.pri)
 SOURCES += \
           plugin/terminal_screen.cpp \
           plugin/object_destruct_item.cpp \
-          plugin/mono_text.cpp \
           plugin/yat_extension_plugin.cpp \
 
 HEADERS += \
           plugin/terminal_screen.h \
           plugin/object_destruct_item.h \
-          plugin/mono_text.h \
           plugin/yat_extension_plugin.h \
 
 OTHER_FILES = \
