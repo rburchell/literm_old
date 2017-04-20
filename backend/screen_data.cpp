@@ -140,7 +140,8 @@ void ScreenData::setWidth(int width)
 void ScreenData::clearToEndOfLine(const QPoint &point)
 {
     auto it = it_for_row_ensure_single_line_block(point.y());
-    (*it)->clearToEnd(point.x());
+    if (it != m_screen_blocks.end())
+        (*it)->clearToEnd(point.x());
 }
 
 void ScreenData::clearToEndOfScreen(int y)
@@ -461,6 +462,8 @@ void ScreenData::clearBlock(std::list<Block *>::iterator line)
 std::list<Block *>::iterator ScreenData::it_for_row_ensure_single_line_block(int row)
 {
     auto it = it_for_row(row);
+    if (it == m_screen_blocks.end())
+        return it;
     const int index = (*it)->screenIndex();
     const int lines = (*it)->lineCount();
 
