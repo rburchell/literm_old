@@ -315,7 +315,7 @@ void Block::insertAtPos(int pos, const QString &text, const TextStyle &style, bo
     }
 }
 
-const QString &Block::textLine() const
+QString Block::textLine() const
 {
     return m_text_line;
 }
