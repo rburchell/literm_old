@@ -2,4 +2,5 @@ TEMPLATE = subdirs
 SUBDIRS = \
     block \
     parser \
-    screen
+    screen \
+    cursor

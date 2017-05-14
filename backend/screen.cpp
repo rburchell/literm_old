@@ -45,7 +45,13 @@
 
 Q_LOGGING_CATEGORY(lcScreen, "yat.screen", QtDebugMsg)
 
-Screen::Screen(QObject *parent)
+/*!
+     Creates a new screen instance with the specified \a parent. If \a testMode
+     is true, then the pty will not be connected, with the expectation being that
+     either the parser is being driven externally, or that no parser is directly
+     involved (i.e. the cursor is being manipulated directly by a test).
+*/
+Screen::Screen(QObject *parent, bool testMode)
     : QObject(parent)
     , m_palette(new ColorPalette(this))
     , m_parser(this)
@@ -76,9 +82,10 @@ Screen::Screen(QObject *parent)
     setHeight(25);
     setWidth(80);
 
-    connect(&m_pty, &YatPty::readyRead, this, &Screen::readData);
-    connect(&m_pty, &YatPty::hangupReceived,this, &Screen::hangup);
-
+    if (!testMode) {
+        connect(&m_pty, &YatPty::readyRead, this, &Screen::readData);
+        connect(&m_pty, &YatPty::hangupReceived,this, &Screen::hangup);
+    }
 }
 
 Screen::~Screen()

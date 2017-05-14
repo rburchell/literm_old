@@ -55,7 +55,7 @@ class Screen : public QObject
     Q_PROPERTY(QString platformName READ platformName CONSTANT)
 
 public:
-    explicit Screen(QObject *parent = 0);
+    explicit Screen(QObject *parent = 0, bool testMode = false);
     ~Screen();
 
     void emitRequestHeight(int newHeight);
