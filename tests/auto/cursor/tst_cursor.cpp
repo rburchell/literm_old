@@ -60,6 +60,7 @@ void tst_Cursor::construct()
     QCOMPARE(cur->y(), 0);
     QCOMPARE(cur->new_x(), 0);
     QCOMPARE(cur->new_y(), 0);
+    QCOMPARE(cur->position(), QPoint(0, 0));
 
     QCOMPARE(cur->blinking(), false);
     QCOMPARE(cur->visible(), true);
@@ -330,6 +331,7 @@ void tst_Cursor::positionSignals()
 
     QCOMPARE(cur->x(), 0);
     QCOMPARE(cur->y(), 0);
+    QCOMPARE(cur->position(), QPoint(0, 0));
 
     {
         QSignalSpy xSpy(cur, &Cursor::xChanged);
@@ -338,6 +340,7 @@ void tst_Cursor::positionSignals()
 
         QTRY_COMPARE(cur->x(), 10);
         QTRY_COMPARE(cur->y(), 15);
+        QCOMPARE(cur->position(), QPoint(10, 15));
 
         QCOMPARE(xSpy.count(), 1);
         QCOMPARE(ySpy.count(), 1);
@@ -352,6 +355,7 @@ void tst_Cursor::positionSignals()
 
         QTRY_COMPARE(cur->x(), 13);
         QTRY_COMPARE(cur->y(), 14);
+        QCOMPARE(cur->position(), QPoint(13, 14));
 
         QCOMPARE(xSpy.count(), 1);
         QCOMPARE(ySpy.count(), 1);
