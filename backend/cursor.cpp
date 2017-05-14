@@ -149,6 +149,7 @@ bool Cursor::visible() const
 void Cursor::setVisible(bool visible)
 {
     m_new_visibillity = visible;
+    notifyChanged();
 }
 
 bool Cursor::blinking() const
@@ -159,6 +160,7 @@ bool Cursor::blinking() const
 void Cursor::setBlinking(bool blinking)
 {
     m_new_blinking = blinking;
+    notifyChanged();
 }
 
 void Cursor::setTextStyle(TextStyle::Style style, bool add)

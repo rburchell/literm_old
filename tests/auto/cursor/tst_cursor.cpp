@@ -34,6 +34,7 @@ class tst_Cursor : public QObject
 
 private slots:
     void construct();
+    void blinkingAndVisibleChanges();
     void stayWithinBounds();
     void moveDownAndUp();
     void moveRightAndLeft();
@@ -59,6 +60,49 @@ void tst_Cursor::construct()
     QCOMPARE(cur->y(), 0);
     QCOMPARE(cur->new_x(), 0);
     QCOMPARE(cur->new_y(), 0);
+
+    QCOMPARE(cur->blinking(), false);
+    QCOMPARE(cur->visible(), true);
+}
+
+void tst_Cursor::blinkingAndVisibleChanges()
+{
+    Screen s(0, true /* testMode */);
+    Cursor *cur = s.currentCursor();
+
+    // blinking
+    {
+        QSignalSpy spy(cur, &Cursor::blinkingChanged);
+        cur->setBlinking(true);
+
+        QTRY_COMPARE(cur->blinking(), true);
+        QCOMPARE(spy.count(), 1);
+    }
+
+    {
+        QSignalSpy spy(cur, &Cursor::blinkingChanged);
+        cur->setBlinking(false);
+
+        QTRY_COMPARE(cur->blinking(), false);
+        QCOMPARE(spy.count(), 1);
+    }
+
+    // visible
+    {
+        QSignalSpy spy(cur, &Cursor::visibilityChanged);
+        cur->setVisible(false);
+
+        QTRY_COMPARE(cur->visible(), false);
+        QCOMPARE(spy.count(), 1);
+    }
+
+    {
+        QSignalSpy spy(cur, &Cursor::visibilityChanged);
+        cur->setVisible(true);
+
+        QTRY_COMPARE(cur->visible(), true);
+        QCOMPARE(spy.count(), 1);
+    }
 }
 
 struct CursorRestorer
