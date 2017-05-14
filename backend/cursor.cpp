@@ -111,8 +111,12 @@ void Cursor::setScreenWidth(int newWidth, int removedBeginning, int reclaimed)
     } else {
         new_ry() = (*it)->screenIndex() + m_current_pos_in_block / newWidth;
         new_rx() = m_current_pos_in_block % newWidth;
+        if (new_y() >= m_screen_height) {
+            int diff = new_y() - m_screen_height;
+            new_ry() -= (diff + 1);
+        }
     }
-    qCDebug(lcCursor) << "setScreenWidth: " << newWidth << removedBeginning << reclaimed << " new pos " << new_rx() << new_ry();
+    qCDebug(lcCursor) << "setScreenWidth: " << newWidth << removedBeginning << reclaimed << " new pos " << new_rx() << new_ry() << " screen dimensions " << m_screen_width << m_screen_height;
     Q_ASSERT(new_rx() >= 0 && new_rx() < m_screen_width);
     Q_ASSERT(new_ry() >= 0 && new_ry() < m_screen_height);
     m_resize_block = 0;
@@ -129,7 +133,11 @@ void Cursor::setScreenHeight(int newHeight, int removedBeginning, int reclaimed)
     if (new_y() <= 0) {
         new_ry() = 0;
     }
-    qCDebug(lcCursor) << "setScreenHeight: " << newHeight << removedBeginning << reclaimed << " new pos " << new_rx() << new_ry();
+    if (new_y() >= m_screen_height) {
+        int diff = new_y() - m_screen_height;
+        new_ry() -= (diff + 1);
+    }
+    qCDebug(lcCursor) << "setScreenHeight: " << newHeight << removedBeginning << reclaimed << " new pos " << new_rx() << new_ry() << " screen dimensions " << m_screen_width << m_screen_height;
     Q_ASSERT(new_rx() >= 0 && new_rx() < m_screen_width);
     Q_ASSERT(new_ry() >= 0 && new_ry() < m_screen_height);
 }
