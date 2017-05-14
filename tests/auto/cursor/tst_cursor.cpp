@@ -39,6 +39,9 @@ private slots:
     void moveRightAndLeft();
     void moveToLine();
     void moveToCharacter();
+    void move();
+    void moveBeginningOfLine();
+    void positionSignals();
 };
 
 void tst_Cursor::construct()
@@ -218,6 +221,96 @@ void tst_Cursor::moveToCharacter()
         } else {
             QCOMPARE(cur->new_x(), s.width()); // XXX: this seems wrong (should be -1)
         }
+    }
+}
+
+void tst_Cursor::move()
+{
+    Screen s(0, true /* testMode */);
+    Cursor *cur = s.currentCursor();
+
+    for (int i = -10; i < s.width() + 10; ++i) {
+        for (int j = -10; j < s.height() + 10; ++j) {
+            cur->move(i, j);
+
+            if (i < 0) {
+                QCOMPARE(cur->new_x(), 0);
+            } else if (i < s.width()) {
+                QCOMPARE(cur->new_x(), i);
+            } else {
+                QCOMPARE(cur->new_x(), s.width() - 1);
+            }
+
+            if (j < 0) {
+                QCOMPARE(cur->new_y(), 0);
+            } else if (j < s.height()) {
+                QCOMPARE(cur->new_y(), j);
+            } else {
+                QCOMPARE(cur->new_y(), s.height() - 1);
+            }
+        }
+    }
+}
+
+void tst_Cursor::moveBeginningOfLine()
+{
+    Screen s(0, true /* testMode */);
+    Cursor *cur = s.currentCursor();
+
+    QCOMPARE(cur->new_x(), 0);
+    QCOMPARE(cur->new_y(), 0);
+
+    cur->moveRight();
+    QCOMPARE(cur->new_x(), 1);
+    QCOMPARE(cur->new_y(), 0);
+
+    cur->moveBeginningOfLine();
+    QCOMPARE(cur->new_x(), 0);
+    QCOMPARE(cur->new_y(), 0);
+
+    cur->moveDown(); // moveBeginningOfLine should not affect y
+    cur->moveRight();
+    QCOMPARE(cur->new_x(), 1);
+    QCOMPARE(cur->new_y(), 1);
+
+    cur->moveBeginningOfLine();
+    QCOMPARE(cur->new_x(), 0);
+    QCOMPARE(cur->new_y(), 1);
+}
+
+// Tests that signals are emitted correctly when position changes.
+void tst_Cursor::positionSignals()
+{
+    Screen s(0, true /* testMode */);
+    Cursor *cur = s.currentCursor();
+
+    QCOMPARE(cur->x(), 0);
+    QCOMPARE(cur->y(), 0);
+
+    {
+        QSignalSpy xSpy(cur, &Cursor::xChanged);
+        QSignalSpy ySpy(cur, &Cursor::yChanged);
+        cur->move(10, 15);
+
+        QTRY_COMPARE(cur->x(), 10);
+        QTRY_COMPARE(cur->y(), 15);
+
+        QCOMPARE(xSpy.count(), 1);
+        QCOMPARE(ySpy.count(), 1);
+    }
+
+    // Multiple updates should be coalesced into a single signal.
+    {
+        QSignalSpy xSpy(cur, &Cursor::xChanged);
+        QSignalSpy ySpy(cur, &Cursor::yChanged);
+        cur->move(11, 12);
+        cur->move(13, 14);
+
+        QTRY_COMPARE(cur->x(), 13);
+        QTRY_COMPARE(cur->y(), 14);
+
+        QCOMPARE(xSpy.count(), 1);
+        QCOMPARE(ySpy.count(), 1);
     }
 }
 

@@ -551,6 +551,8 @@ void Cursor::resetScrollArea()
 
 void Cursor::dispatchEvents()
 {
+    m_notified = false;
+
     qCDebug(lcCursor) << m_position << m_new_position << m_content_height_changed;
     if (m_new_position != m_position|| m_content_height_changed) {
         bool emit_x_changed = m_new_position.x() != m_position.x();
