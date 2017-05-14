@@ -34,7 +34,7 @@
 #include <QtCore/QDebug>
 #include <QtCore/QLoggingCategory>
 
-Q_LOGGING_CATEGORY(lcScreenData, "yat.screen_data", QtDebugMsg)
+Q_LOGGING_CATEGORY(lcScreenData, "yat.screen_data", QtWarningMsg)
 
 ScreenData::ScreenData(size_t max_scrollback, Screen *screen)
     : QObject(screen)

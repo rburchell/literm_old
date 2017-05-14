@@ -30,7 +30,7 @@
 
 #include <QtCore/QLoggingCategory>
 
-Q_LOGGING_CATEGORY(lcScrollback, "yat.scrollback", QtDebugMsg)
+Q_LOGGING_CATEGORY(lcScrollback, "yat.scrollback", QtWarningMsg)
 
 Scrollback::Scrollback(size_t max_size, ScreenData *screen_data)
     : m_screen_data(screen_data)

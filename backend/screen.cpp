@@ -43,7 +43,7 @@
 #include <float.h>
 #include <cmath>
 
-Q_LOGGING_CATEGORY(lcScreen, "yat.screen", QtDebugMsg)
+Q_LOGGING_CATEGORY(lcScreen, "yat.screen", QtWarningMsg)
 
 /*!
      Creates a new screen instance with the specified \a parent. If \a testMode
