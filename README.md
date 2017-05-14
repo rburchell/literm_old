@@ -36,6 +36,16 @@ available. After that, use:
 
 ... to run the application.
 
+# developing
+
+Add --enable-coverage to configure. It will let you run code coverage reports.
+Build as normal, run `make check` to run tests, and then
+`./coverage.sh path_to_build_dir` to generate code coverage information.
+
+Note that this is only really tested on mac/clang right now, contributions to
+make it work elsewhere are very welcome. I'd also like to build this into make
+check somehow (or perhaps a make coverage target).
+
 # history
 
 literm started off life as [Yat, a terminal emulator by Jørgen

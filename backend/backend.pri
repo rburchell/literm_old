@@ -40,3 +40,12 @@ SOURCES += \
            $$PWD/scrollback.cpp \
            $$PWD/selection.cpp
 
+coverage {
+    clang: {
+        QMAKE_CXXFLAGS += --coverage
+        QMAKE_LFLAGS += --coverage
+    } else {
+        warning("Not sure how to build with coverage for the current compiler")
+    }
+}
+

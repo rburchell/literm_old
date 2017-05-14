@@ -13,6 +13,7 @@ INSTALL_PREFIX=
 INSTALL_QML=
 
 BUILD_TESTS=yes
+ENABLE_COVERAGE=no
 
 QMAKE_CONFIG=
 QMAKE_PARAMS=
@@ -114,6 +115,9 @@ while [ "$#" -gt 0 ]; do
             ;;
         esac
         ;;
+    coverage)
+        ENABLE_COVERAGE=yes
+        ;;
     verbose)
         QMAKE_CONFIG="$QMAKE_CONFIG verbose"
         ;;
@@ -186,6 +190,7 @@ fi
 [ "$INSTALL_QML" = "" ] && INSTALL_QML=`$QMAKE -query QT_INSTALL_QML`
 
 [ "$BUILD_TESTS" = "no" ] && QMAKE_PARAMS="$QMAKE_PARAMS -config no_tests"
+[ "$ENABLE_COVERAGE" = "yes" ] && QMAKE_PARAMS="$QMAKE_PARAMS -config coverage"
 
 [ "$QMAKE_SPEC" != "" ] && QMAKE_SPEC="-spec $QMAKE_SPEC"
 
@@ -204,6 +209,7 @@ if [ "$QMAKE_CONFIG" != "" ]; then
     echo "Configuration ...................$QMAKE_CONFIG"
 fi
 echo "Tests ........................... $BUILD_TESTS"
+echo "Coverage ........................ $ENABLE_COVERAGE"
 echo
 echo "Install QML2 imports ............ $INSTALL_QML"
 echo
