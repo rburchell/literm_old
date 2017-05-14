@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
 SUBDIRS = \
     block \
-    parser
+    parser \
+    screen
