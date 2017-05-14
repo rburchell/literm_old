@@ -37,6 +37,8 @@ private slots:
     void stayWithinBounds();
     void moveDownAndUp();
     void moveRightAndLeft();
+    void moveToLine();
+    void moveToCharacter();
 };
 
 void tst_Cursor::construct()
@@ -176,6 +178,47 @@ void tst_Cursor::moveRightAndLeft()
     cur->moveLeft();
     QCOMPARE(cur->new_x(), 0);
     QCOMPARE(cur->new_y(), 0);
+}
+
+void tst_Cursor::moveToLine()
+{
+    Screen s(0, true /* testMode */);
+    Cursor *cur = s.currentCursor();
+
+    for (int i = -10; i < s.height() + 10; ++i) {
+        cur->moveToLine(i);
+
+        if (i < 0) {
+            QCOMPARE(cur->new_y(), 0);
+        } else if (i < s.height()) {
+            QCOMPARE(cur->new_y(), i);
+        } else {
+            QCOMPARE(cur->new_y(), s.height() - 1);
+        }
+    }
+}
+
+void tst_Cursor::moveToCharacter()
+{
+    Screen s(0, true /* testMode */);
+    Cursor *cur = s.currentCursor();
+
+    for (int i = -10; i < s.width() + 10; ++i) {
+        // XXX:
+        // I think the behaviour of this function may be wrong now I write a
+        // test for it. At least, it seems to be different than the other move
+        // functions, which seem to work 0-indexed -- this seems to assume an
+        // offset of 1.
+        cur->moveToCharacter(i);
+
+        if (i < 0) {
+            QCOMPARE(cur->new_x(), 1); // XXX: this seems wrong (should be -1)
+        } else if (i < s.width()) {
+            QCOMPARE(cur->new_x(), i);
+        } else {
+            QCOMPARE(cur->new_x(), s.width()); // XXX: this seems wrong (should be -1)
+        }
+    }
 }
 
 #include <tst_cursor.moc>
