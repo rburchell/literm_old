@@ -103,30 +103,21 @@ void YatPty::write(const QByteArray &data)
     }
 }
 
-void YatPty::setWidth(int width, int pixelWidth)
-{
-    if (!m_winsize) {
-        m_winsize = new struct winsize;
-        m_winsize->ws_row = 25;
-        m_winsize->ws_ypixel = 0;
-    }
-
-    m_winsize->ws_col = width;
-    m_winsize->ws_xpixel = pixelWidth;
-    ioctl(m_master_fd, TIOCSWINSZ, m_winsize);
-}
-
-void YatPty::setHeight(int height, int pixelHeight)
+void YatPty::setSize(int width, int pixelWidth, int height, int pixelHeight)
 {
     if (!m_winsize) {
         m_winsize = new struct winsize;
         m_winsize->ws_col = 80;
+        m_winsize->ws_row = 25;
         m_winsize->ws_xpixel = 0;
+        m_winsize->ws_ypixel = 0;
     }
+
+    m_winsize->ws_col = width;
     m_winsize->ws_row = height;
+    m_winsize->ws_xpixel = pixelWidth;
     m_winsize->ws_ypixel = pixelHeight;
     ioctl(m_master_fd, TIOCSWINSZ, m_winsize);
-
 }
 
 QSize YatPty::size() const

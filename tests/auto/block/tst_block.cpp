@@ -11,6 +11,7 @@ public:
         screen.setHeight(5);
         int width = 100;
         screen.setWidth(width);
+        screen.dispatchChanges(); // get geometry valid.
         (*screen.currentScreenData()->it_for_row(0))->clear();
         if (fill) {
             QString spaces(width, QChar(' '));

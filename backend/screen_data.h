@@ -88,15 +88,12 @@ public:
     bool it_is_end(std::list<Block *>::iterator it) const { return m_screen_blocks.end() == it; }
 
     const SelectionRange getDoubleClickSelectionRange(size_t character, size_t line);
-public slots:
-    void setHeight(int height, int currentCursorLine);
-    void setWidth(int width);
+    void setSize(int width, int height, int currentCursorLine);
 
 signals:
     void contentHeightChanged();
     void contentModified(size_t lineModified, int lineDiff, int contentDiff);
-    void dataHeightChanged(int newHeight, int removedBeginning, int reclaimed);
-    void dataWidthChanged(int newHeight, int removedBeginning, int reclaimed);
+    void dataSizeChanged(int newWidth, int newHeight, int removedBeginning, int reclaimed);
 
 private:
     const CursorDiff modify(const QPoint &pos, const QString &text, const TextStyle &style, bool replace, bool only_latin);

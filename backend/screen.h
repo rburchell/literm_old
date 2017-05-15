@@ -145,15 +145,16 @@ signals:
     void defaultBackgroundColorChanged();
 
     void contentModified(size_t lineModified, int lineDiff, int contentDiff);
-    void dataHeightChanged(int newHeight, int removedBeginning, int reclaimed);
-    void widthAboutToChange(int width);
-    void dataWidthChanged(int newWidth, int removedBeginning, int reclaimed);
+    void widthAboutToChange();
+    void dataSizeChanged(int newWidth, int newHeight, int removedBeginning, int reclaimed);
 
     void hangup();
 protected:
     void timerEvent(QTimerEvent *);
 
 private:
+    void dispatchGeometryChanges();
+
     ColorPalette *m_palette;
     YatPty m_pty;
     Parser m_parser;
@@ -162,7 +163,9 @@ private:
 
     int m_timer_event_id;
     int m_width;
+    int m_new_width;
     int m_height;
+    int m_new_height;
 
     ScreenData *m_primary_data;
     ScreenData *m_alternate_data;

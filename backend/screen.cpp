@@ -1,5 +1,6 @@
 /******************************************************************************
- * Copyright (c) 2012 Jørgen Lind
+* Copyright (C) 2017 Robin Burchell <robin+git@viroteck.net>
+* Copyright (c) 2012 Jørgen Lind
 *
 * Permission is hereby granted, free of charge, to any person obtaining a copy
 * of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +58,9 @@ Screen::Screen(QObject *parent, bool testMode)
     , m_parser(this)
     , m_timer_event_id(0)
     , m_width(1)
-    , m_height(0)
+    , m_new_width(80)
+    , m_height(1)
+    , m_new_height(25)
     , m_primary_data(new ScreenData(500, this))
     , m_alternate_data(new ScreenData(0, this))
     , m_current_data(m_primary_data)
@@ -75,17 +78,16 @@ Screen::Screen(QObject *parent, bool testMode)
 
     connect(m_primary_data, SIGNAL(contentHeightChanged()), this, SIGNAL(contentHeightChanged()));
     connect(m_primary_data, &ScreenData::contentModified, this, &Screen::contentModified);
-    connect(m_primary_data, &ScreenData::dataHeightChanged, this, &Screen::dataHeightChanged);
-    connect(m_primary_data, &ScreenData::dataWidthChanged, this, &Screen::dataWidthChanged);
+    connect(m_primary_data, &ScreenData::dataSizeChanged, this, &Screen::dataSizeChanged);
     connect(m_palette, SIGNAL(changed()), this, SLOT(paletteChanged()));
-
-    setHeight(25);
-    setWidth(80);
 
     if (!testMode) {
         connect(&m_pty, &YatPty::readyRead, this, &Screen::readData);
         connect(&m_pty, &YatPty::hangupReceived,this, &Screen::hangup);
     }
+
+    // Force a dispatch so all internal state is correct regarding geometry
+    dispatchGeometryChanges();
 }
 
 Screen::~Screen()
@@ -115,29 +117,6 @@ void Screen::emitRequestHeight(int newHeight)
     emit requestHeightChange(newHeight);
 }
 
-void Screen::setHeight(int height)
-{
-    height = std::max(1, height);
-    if (height == m_height)
-        return;
-
-    qCDebug(lcScreen) << "Setting height " << height;
-    m_height = height;
-
-    m_primary_data->setHeight(height, currentCursor()->new_y());
-    m_alternate_data->setHeight(height, currentCursor()->new_y());
-
-    m_pty.setHeight(height, height * 10);
-
-    emit heightChanged();
-    scheduleEventDispatch();
-}
-
-int Screen::height() const
-{
-    return m_height;
-}
-
 int Screen::contentHeight() const
 {
     return currentScreenData()->contentHeight();
@@ -151,22 +130,11 @@ void Screen::emitRequestWidth(int newWidth)
 
 void Screen::setWidth(int width)
 {
-    width = std::max(1,width);
-    if (width == m_width)
+    width = std::max(1, width);
+    if (m_new_width == width)
         return;
 
-    qCDebug(lcScreen) << "Width about to change to " << width;
-    emit widthAboutToChange(width);
-
-    qCDebug(lcScreen) << "Setting width " << width;
-    m_width = width;
-
-    m_primary_data->setWidth(width);
-    m_alternate_data->setWidth(width);
-
-    m_pty.setWidth(width, width * 10);
-
-    emit widthChanged();
+    m_new_width = width;
     scheduleEventDispatch();
 }
 
@@ -175,20 +143,33 @@ int Screen::width() const
     return m_width;
 }
 
+void Screen::setHeight(int height)
+{
+    height = std::max(1, height);
+    if (m_new_height == height)
+        return;
+
+    m_new_height = height;
+    scheduleEventDispatch();
+}
+
+int Screen::height() const
+{
+    return m_height;
+}
+
 void Screen::useAlternateScreenBuffer()
 {
     if (m_current_data == m_primary_data) {
         qCDebug(lcScreen) << "Switching to alternate screen buffer";
         disconnect(m_primary_data, SIGNAL(contentHeightChanged()), this, SIGNAL(contentHeightChanged()));
         disconnect(m_primary_data, &ScreenData::contentModified, this, &Screen::contentModified);
-        disconnect(m_primary_data, &ScreenData::dataHeightChanged, this, &Screen::dataHeightChanged);
-        disconnect(m_primary_data, &ScreenData::dataWidthChanged, this, &Screen::dataWidthChanged);
+        disconnect(m_primary_data, &ScreenData::dataSizeChanged, this, &Screen::dataSizeChanged);
         m_current_data = m_alternate_data;
         m_current_data->clear();
         connect(m_alternate_data, SIGNAL(contentHeightChanged()), this, SIGNAL(contentHeightChanged()));
         connect(m_alternate_data, &ScreenData::contentModified, this, &Screen::contentModified);
-        connect(m_alternate_data, &ScreenData::dataHeightChanged, this, &Screen::dataHeightChanged);
-        connect(m_alternate_data, &ScreenData::dataWidthChanged, this, &Screen::dataWidthChanged);
+        connect(m_alternate_data, &ScreenData::dataSizeChanged, this, &Screen::dataSizeChanged);
         emit contentHeightChanged();
     }
 }
@@ -199,13 +180,11 @@ void Screen::useNormalScreenBuffer()
         qCDebug(lcScreen) << "Switching to normal screen buffer";
         disconnect(m_alternate_data, SIGNAL(contentHeightChanged()), this, SIGNAL(contentHeightChanged()));
         disconnect(m_alternate_data, &ScreenData::contentModified, this, &Screen::contentModified);
-        disconnect(m_alternate_data, &ScreenData::dataHeightChanged, this, &Screen::dataHeightChanged);
-        disconnect(m_alternate_data, &ScreenData::dataWidthChanged, this, &Screen::dataWidthChanged);
+        disconnect(m_alternate_data, &ScreenData::dataSizeChanged, this, &Screen::dataSizeChanged);
         m_current_data = m_primary_data;
         connect(m_primary_data, SIGNAL(contentHeightChanged()), this, SIGNAL(contentHeightChanged()));
         connect(m_primary_data, &ScreenData::contentModified, this, &Screen::contentModified);
-        connect(m_primary_data, &ScreenData::dataHeightChanged, this, &Screen::dataHeightChanged);
-        connect(m_primary_data, &ScreenData::dataWidthChanged, this, &Screen::dataWidthChanged);
+        connect(m_primary_data, &ScreenData::dataSizeChanged, this, &Screen::dataSizeChanged);
         emit contentHeightChanged();
     }
 }
@@ -329,9 +308,49 @@ void Screen::scheduleEventDispatch()
     m_time_since_parsed.restart();
 }
 
+void Screen::dispatchGeometryChanges()
+{
+    bool hasWidthChanged = false;
+    bool hasHeightChanged = false;
+    if (m_new_width != m_width) {
+        hasWidthChanged = true;
+        qCDebug(lcScreen) << "Width about to change to " << m_new_width;
+        emit widthAboutToChange();
+    }
+    if (m_new_height != m_height) {
+        hasHeightChanged = true;
+        qCDebug(lcScreen) << "Height about to change to " << m_new_height;
+    }
+
+    if (hasWidthChanged || hasHeightChanged) {
+        // Send this nice and early to give the application a chance to redraw.
+        // We're going to be blocked on doing our own resize anyway, so it won't
+        // matter to us.
+        m_pty.setSize(m_new_width, m_new_width * 10, m_new_height, m_new_height * 10);
+
+        m_width = m_new_width;
+        Q_ASSERT(m_width >= 1);
+        m_height = m_new_height;
+        Q_ASSERT(m_height >= 1);
+        m_primary_data->setSize(m_new_width, m_new_height, currentCursor()->new_y());
+        m_alternate_data->setSize(m_new_width, m_new_height, currentCursor()->new_y());
+
+        if (hasWidthChanged) {
+            emit widthChanged();
+        }
+
+        if (hasHeightChanged) {
+            emit heightChanged();
+        }
+    }
+}
+
 void Screen::dispatchChanges()
 {
     qCDebug(lcScreen) << "Dispatching";
+
+    dispatchGeometryChanges();
+
     if (m_old_current_data != m_current_data) {
         m_old_current_data->releaseTextObjects();
         m_old_current_data = m_current_data;

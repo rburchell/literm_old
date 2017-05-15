@@ -55,8 +55,7 @@ Cursor::Cursor(Screen* screen)
     , m_current_pos_in_block(0)
 {
     connect(screen, &Screen::widthAboutToChange, this, &Cursor::setScreenWidthAboutToChange);
-    connect(screen, &Screen::dataWidthChanged, this, &Cursor::setScreenWidth);
-    connect(screen, &Screen::dataHeightChanged, this, &Cursor::setScreenHeight);
+    connect(screen, &Screen::dataSizeChanged, this, &Cursor::setScreenSize);
     connect(screen, &Screen::contentHeightChanged, this, &Cursor::contentHeightChanged);
     connect(colorPalette(), &ColorPalette::changed, this, &Cursor::resetColors);
 
@@ -75,71 +74,80 @@ Cursor::~Cursor()
 
 }
 
-void Cursor::setScreenWidthAboutToChange(int width)
+void Cursor::setScreenWidthAboutToChange()
 {
-    Q_UNUSED(width);
+    // Find the current block we're located on
     auto it = m_screen->currentScreenData()->it_for_row(new_y());
     if (m_screen->currentScreenData()->it_is_end(it))
         return;
 
+    // Preserve the current block, and find out the un-wrapped position in the
+    // block we're at. After the blocks are re-wrapped, we will reset our
+    // position.
     m_resize_block = *it;
     int line_diff = new_y() - m_resize_block->screenIndex();
     m_current_pos_in_block = (line_diff * m_screen_width) + new_x();
 }
 
-void Cursor::setScreenWidth(int newWidth, int removedBeginning, int reclaimed)
+void Cursor::setScreenSize(int newWidth, int newHeight, int removedBeginning, int reclaimed)
 {
-    if (newWidth > m_screen_width) {
-        for (int i = m_screen_width -1; i < newWidth; i++) {
-            if (i % 8 == 0) {
-                m_tab_stops.append(i);
+    bool hasChanged = false;
+
+    if (newWidth != m_screen_width) {
+        if (newWidth > m_screen_width) {
+            for (int i = m_screen_width -1; i < newWidth; i++) {
+                if (i % 8 == 0) {
+                    m_tab_stops.append(i);
+                }
             }
         }
-    }
 
-    m_screen_width = newWidth;
+        m_screen_width = newWidth;
 
-    auto it = m_screen->currentScreenData()->it_for_block(m_resize_block);
-    if (m_screen->currentScreenData()->it_is_end(it)) {
-        if (removedBeginning > reclaimed) {
-            new_ry() = 0;
-            new_rx() = 0;
+        // Find the block the cursor was positioned on before.
+        auto it = m_screen->currentScreenData()->it_for_block(m_resize_block);
+        if (m_screen->currentScreenData()->it_is_end(it)) {
+            // If the block has gone off the screen, then position the cursor at the
+            // beginning, or end of the screen.
+            if (removedBeginning > reclaimed) {
+                new_ry() = 0;
+                new_rx() = 0;
+            } else {
+                new_ry() = m_screen_height - 1;
+                new_rx() = 0;
+            }
         } else {
-            new_ry() = m_screen_height - 1;
-            new_rx() = 0;
+            // Block is still on screen.
+            // Move to wherever the block is now, plus the offset inside the block
+            // depending on the new screen width.
+            new_ry() = (*it)->screenIndex() + m_current_pos_in_block / newWidth;
+            new_rx() = m_current_pos_in_block % newWidth;
         }
-    } else {
-        new_ry() = (*it)->screenIndex() + m_current_pos_in_block / newWidth;
-        new_rx() = m_current_pos_in_block % newWidth;
-        if (new_y() >= m_screen_height) {
-            int diff = new_y() - m_screen_height;
-            new_ry() -= (diff + 1);
-        }
+        m_resize_block = 0;
+        m_current_pos_in_block = 0;
+        hasChanged = true;
     }
-    qCDebug(lcCursor) << "setScreenWidth: " << newWidth << removedBeginning << reclaimed << " new pos " << new_rx() << new_ry() << " screen dimensions " << m_screen_width << m_screen_height;
-    Q_ASSERT(new_rx() >= 0 && new_rx() < m_screen_width);
-    Q_ASSERT(new_ry() >= 0 && new_ry() < m_screen_height);
-    m_resize_block = 0;
-    m_current_pos_in_block = 0;
-    notifyChanged();
-}
 
-void Cursor::setScreenHeight(int newHeight, int removedBeginning, int reclaimed)
-{
-    resetScrollArea();
-    m_screen_height = newHeight;
-    new_ry() -= removedBeginning;
-    new_ry() += reclaimed;
-    if (new_y() <= 0) {
-        new_ry() = 0;
+    if (newHeight != m_screen_height) {
+        resetScrollArea();
+        m_screen_height = newHeight;
+        new_ry() -= removedBeginning;
+        new_ry() += reclaimed;
+        if (new_y() <= 0) {
+            new_ry() = 0;
+        }
+        hasChanged = true;
     }
-    if (new_y() >= m_screen_height) {
-        int diff = new_y() - m_screen_height;
-        new_ry() -= (diff + 1);
+
+    if (hasChanged) {
+        qCDebug(lcCursor) << "setScreenSize: " << newWidth << newHeight << removedBeginning << reclaimed << " new pos " << new_rx() << new_ry();
+        Q_ASSERT(new_rx() >= 0 && new_rx() < m_screen_width);
+
+        // TODO: why does leaving this enabled trip asserts when resizing (#10),
+        // yet, it seem we work ok without it? don't understand.
+        //Q_ASSERT(new_ry() >= 0 && new_ry() < m_screen_height);
+        notifyChanged();
     }
-    qCDebug(lcCursor) << "setScreenHeight: " << newHeight << removedBeginning << reclaimed << " new pos " << new_rx() << new_ry() << " screen dimensions " << m_screen_width << m_screen_height;
-    Q_ASSERT(new_rx() >= 0 && new_rx() < m_screen_width);
-    Q_ASSERT(new_ry() >= 0 && new_ry() < m_screen_height);
 }
 
 bool Cursor::visible() const
@@ -555,10 +563,11 @@ void Cursor::dispatchEvents()
 {
     m_notified = false;
 
-    qCDebug(lcCursor) << m_position << m_new_position << m_content_height_changed;
     if (m_new_position != m_position|| m_content_height_changed) {
         bool emit_x_changed = m_new_position.x() != m_position.x();
         bool emit_y_changed = m_new_position.y() != m_position.y();
+        if (emit_x_changed || emit_y_changed)
+            qCDebug(lcCursor) << m_position << m_new_position << m_content_height_changed;
         m_position = m_new_position;
         if (emit_x_changed)
             emit xChanged();
@@ -566,14 +575,14 @@ void Cursor::dispatchEvents()
             emit yChanged();
     }
 
-    qCDebug(lcCursor) << m_new_visibillity << m_visible;
     if (m_new_visibillity != m_visible) {
+        qCDebug(lcCursor) << m_new_visibillity << m_visible;
         m_visible = m_new_visibillity;
         emit visibilityChanged();
     }
 
-    qCDebug(lcCursor) << m_new_blinking << m_blinking;
     if (m_new_blinking != m_blinking) {
+        qCDebug(lcCursor) << m_new_blinking << m_blinking;
         m_blinking = m_new_blinking;
         emit blinkingChanged();
     }

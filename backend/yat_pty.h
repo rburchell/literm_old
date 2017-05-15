@@ -38,8 +38,7 @@ public:
 
     void write(const QByteArray &data);
 
-    void setWidth(int width, int pixelWidth = 0);
-    void setHeight(int height, int pixelHeight = 0);
+    void setSize(int width, int pixelWidth, int height, int pixelHeight);
     QSize size() const;
 
     int masterDevice() const;

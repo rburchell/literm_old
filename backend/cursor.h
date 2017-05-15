@@ -115,9 +115,8 @@ public:
     void dispatchEvents();
 
 public slots:
-    void setScreenWidthAboutToChange(int width);
-    void setScreenWidth(int newWidth, int removedBeginning, int reclaimed);
-    void setScreenHeight(int newHeight, int removedBeginning, int reclaimed);
+    void setScreenWidthAboutToChange();
+    void setScreenSize(int newWidth, int newHeight, int removedBeginning, int reclaimed);
 
 signals:
     void xChanged();

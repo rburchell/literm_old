@@ -62,78 +62,68 @@ int ScreenData::contentHeight() const
     return m_height + m_scrollback->height();
 }
 
-void ScreenData::setHeight(int height, int currentCursorLine)
+void ScreenData::setSize(int width, int height, int currentCursorLine)
 {
-    if (m_screen_height == height)
-        return;
-
-    qCDebug(lcScreenData) << "Setting height to " << height << " was " << m_screen_height << " cursor line " << currentCursorLine;
-    m_screen_height = height;
-
-    int removed_beginning = 0;
-    int removed_end = 0;
-    int reclaimed = 0;
-
-    if (m_height > height) {
-        const int to_remove = m_height - height;
-        const int remove_from_end = std::min(m_height - (currentCursorLine + 1), to_remove);
-        const int remove_from_start = to_remove - remove_from_end;
-
-        if (remove_from_end) {
-            qCDebug(lcScreenData) << "Want to remove " << remove_from_end << "lines at end";
-            removed_end = remove_lines_from_end(remove_from_end);
-            qCDebug(lcScreenData) << "Removed" << removed_end << "lines at end";
-        }
-        if (remove_from_start) {
-            qCDebug(lcScreenData) << "Want to remove " << remove_from_start << "lines at start";
-            removed_beginning = push_at_most_to_scrollback(remove_from_start);
-            qCDebug(lcScreenData) << "Removed" << removed_beginning << "lines at start";
-        }
-    } else {
-        qCDebug(lcScreenData) << "Reclaiming...";
-        reclaimed = ensure_at_least_height(height);
-        qCDebug(lcScreenData) << "Reclaimed" << reclaimed << "lines from scrollback";
-    }
-
-    qCDebug(lcScreenData) << "dataHeightChanged" << m_screen_height << removed_beginning << reclaimed;
-    emit dataHeightChanged(m_screen_height, removed_beginning, reclaimed);
-}
-
-void ScreenData::setWidth(int width)
-{
-    if (width == m_width)
-        return;
-
-    qCDebug(lcScreenData) << "Setting width to" << width << "was" << m_width << " height now " << m_height;
-    m_width = width;
-
-    for (Block *block : m_screen_blocks) {
-        int before_count = block->lineCount();
-        block->setWidth(width);
-        m_height += block->lineCount() - before_count;
-    }
-
-    qCDebug(lcScreenData) << "After line resize, height is now: " << m_height;
-
-    qCDebug(lcScreenData) << "Setting scrollback width...";
-    m_scrollback->setWidth(screen()->height(), width);
-    qCDebug(lcScreenData) << "Done setting scrollback width";
-
+    const int oldWidth = m_width;
+    const int oldScreenHeight = m_screen_height;
+    const int oldContentHeight = m_height;
     int removed = 0;
     int reclaimed = 0;
-    if (m_height > m_screen_height) {
-        int to_remove = m_height - m_screen_height;
-        qCDebug(lcScreenData) << "Pushing " << to_remove << " lines to scrollback";
-        removed = push_at_most_to_scrollback(to_remove);
-        qCDebug(lcScreenData) << "Pushed " << removed << " lines to scrollback";
-    } else {
-        qCDebug(lcScreenData) << "Reclaiming...";
-        reclaimed = ensure_at_least_height(m_screen_height);
-        qCDebug(lcScreenData) << "Reclaimed" << reclaimed << "lines from scrollback";
+    bool somethingHappened = false;
+
+    if (width != m_width) {
+        m_width = width;
+
+        for (Block *block : m_screen_blocks) {
+            int before_count = block->lineCount();
+            block->setWidth(width);
+            m_height += block->lineCount() - before_count;
+        }
+
+        m_scrollback->setWidth(screen()->height(), width);
+
+        if (m_height > m_screen_height) {
+            int to_remove = m_height - m_screen_height;
+            removed = push_at_most_to_scrollback(to_remove);
+        } else {
+            reclaimed = ensure_at_least_height(m_screen_height);
+        }
+        qCDebug(lcScreenData) << "Changed width from " << oldWidth << " to " << width << " height was " << oldContentHeight << " now " << m_height << " -- pushed " << removed << " reclaimed " << reclaimed;
+        somethingHappened = true;
     }
 
-    qCDebug(lcScreenData) << "dataWidthChanged" << m_width << removed << reclaimed;
-    emit dataWidthChanged(m_width, removed, reclaimed);
+    if (height != m_screen_height) {
+        m_screen_height = height;
+
+        int removed_beginning = 0;
+        int removed_end = 0;
+
+        if (m_height > height) {
+            const int to_remove = m_height - height;
+            const int remove_from_end = std::min(m_height - (currentCursorLine + 1), to_remove);
+            const int remove_from_start = to_remove - remove_from_end;
+
+            if (remove_from_end) {
+                removed_end = remove_lines_from_end(remove_from_end);
+            }
+            if (remove_from_start) {
+                removed_beginning = push_at_most_to_scrollback(remove_from_start);
+            }
+
+            qCDebug(lcScreenData) << "Changed height from " << oldScreenHeight << " to " << m_screen_height << " -- culling " << remove_from_end << " removed " << removed_end << " and start " << remove_from_start << " removed " << removed_beginning;
+        } else {
+            reclaimed = ensure_at_least_height(height);
+            qCDebug(lcScreenData) << "Reclaimed" << reclaimed << "lines from scrollback";
+        }
+
+        removed += removed_beginning;
+        somethingHappened = true;
+    }
+
+    if (somethingHappened) {
+        qCDebug(lcScreenData) << "dataSizeChanged" << m_width << removed << reclaimed;
+        emit dataSizeChanged(m_width, m_screen_height, removed, reclaimed);
+    }
 }
 
 
