@@ -39,7 +39,7 @@ Q_LOGGING_CATEGORY(lcScreenData, "yat.screen_data", QtWarningMsg)
 ScreenData::ScreenData(size_t max_scrollback, Screen *screen)
     : QObject(screen)
     , m_screen(screen)
-    , m_scrollback(new Scrollback(max_scrollback, this))
+    , m_scrollback(new Scrollback(max_scrollback))
     , m_screen_height(0)
     , m_height(0)
     , m_width(0)
@@ -116,7 +116,7 @@ void ScreenData::setWidth(int width)
     qCDebug(lcScreenData) << "After line resize, height is now: " << m_height;
 
     qCDebug(lcScreenData) << "Setting scrollback width...";
-    m_scrollback->setWidth(width);
+    m_scrollback->setWidth(screen()->height(), width);
     qCDebug(lcScreenData) << "Done setting scrollback width";
 
     int removed = 0;
@@ -328,7 +328,7 @@ Screen *ScreenData::screen() const
 
 void ScreenData::ensureVisibleLines(int top_line)
 {
-    m_scrollback->ensureVisibleLines(top_line);
+    m_scrollback->ensureVisibleLines(screen()->height(), top_line);
 }
 
 void ScreenData::sendSelectionToClipboard(const QPoint &start, const QPoint &end, QClipboard::Mode mode)

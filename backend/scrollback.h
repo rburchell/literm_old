@@ -32,22 +32,21 @@
 #include <QtCore/qglobal.h>
 #include <QtCore/QPoint>
 
-class ScreenData;
 class Block;
 
 class Scrollback
 {
 public:
-    Scrollback(size_t max_size, ScreenData *screen_data);
+    Scrollback(size_t max_size);
 
     void addBlock(Block *block);
     Block *reclaimBlock();
-    void ensureVisibleLines(int top_line);
-    void fixupVisibility();
+    void ensureVisibleLines(int screenHeight, int top_line);
+    void fixupVisibility(int screenHeight);
 
     size_t height() const;
 
-    void setWidth(int width);
+    void setWidth(int screenHeight, int width);
 
     size_t blockCount() { return m_block_count; }
 
@@ -55,7 +54,6 @@ public:
     const SelectionRange getDoubleClickSelectionRange(size_t character, size_t line);
 private:
     std::list<Block *>::iterator findIteratorForLine(size_t line);
-    ScreenData *m_screen_data;
 
     std::list<Block *> m_blocks;
     size_t m_height;

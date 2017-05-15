@@ -24,7 +24,6 @@
 
 #include "scrollback.h"
 
-#include "screen_data.h"
 #include "screen.h"
 #include "block.h"
 
@@ -32,9 +31,8 @@
 
 Q_LOGGING_CATEGORY(lcScrollback, "yat.scrollback", QtWarningMsg)
 
-Scrollback::Scrollback(size_t max_size, ScreenData *screen_data)
-    : m_screen_data(screen_data)
-    , m_height(0)
+Scrollback::Scrollback(size_t max_size)
+    : m_height(0)
     , m_width(0)
     , m_block_count(0)
     , m_max_size(max_size)
@@ -108,7 +106,7 @@ Block *Scrollback::reclaimBlock()
 // Note, note, note! One must be careful with the concept of "lines". As
 // indicated in the diagrams above, we are dealing with blocks, which may
 // actually represent multiple lines on screen (soft-wrapped).
-void Scrollback::ensureVisibleLines(int top_line)
+void Scrollback::ensureVisibleLines(int screenHeight, int top_line)
 {
     if (top_line < 0)
         return;
@@ -119,7 +117,7 @@ void Scrollback::ensureVisibleLines(int top_line)
     // TODO: optimize to *only* hide the range that top_line -> top_line + height &
     // m_firstVisibleLine -> m_firstVisibleLine + height do not intersect.
     std::list<Block*>::iterator it = findIteratorForLine(m_firstVisibleLine);
-    int lastVisibleLine = m_firstVisibleLine + m_screen_data->screen()->height();
+    int lastVisibleLine = m_firstVisibleLine + screenHeight;
     int line_no = m_firstVisibleLine;
     while (it != m_blocks.end() && line_no <= lastVisibleLine) {
         Block *b = *it;
@@ -130,14 +128,14 @@ void Scrollback::ensureVisibleLines(int top_line)
     }
 
     m_firstVisibleLine = top_line;
-    fixupVisibility();
+    fixupVisibility(screenHeight);
 }
 
 // Fix line numbers for blocks in the viewport.
-void Scrollback::fixupVisibility()
+void Scrollback::fixupVisibility(int screenHeight)
 {
     std::list<Block*>::iterator it = findIteratorForLine(m_firstVisibleLine);
-    int lastVisibleLine = m_firstVisibleLine + m_screen_data->screen()->height();
+    int lastVisibleLine = m_firstVisibleLine + screenHeight;
     int line_no = m_firstVisibleLine;
     while (it != m_blocks.end() && line_no <= lastVisibleLine) {
         qCDebug(lcScrollback) << "Showing scrollback block starting " << line_no;
@@ -154,7 +152,7 @@ size_t Scrollback::height() const
     return m_height;
 }
 
-void Scrollback::setWidth(int width)
+void Scrollback::setWidth(int screenHeight, int width)
 {
     m_width = width;
     m_height = 0;
@@ -167,7 +165,7 @@ void Scrollback::setWidth(int width)
     }
 
     // And make sure the blocks visible are correct.
-    fixupVisibility();
+    fixupVisibility(screenHeight);
 }
 
 QString Scrollback::selection(const QPoint &start, const QPoint &end) const
