@@ -1,3 +1,18 @@
+# abandoned
+
+*NOTE* This repository is stale. It was an experiment at reviving Yat, but unfortunately,
+Yat hasn't been heavily battle tested, and as such there's a lot of hard-to-crack bugs.
+
+I decided to take a different approach after poking around it for a while, and am working
+at basing things on top of fingerterm instead, a long standing mobile terminal emulator.
+
+It's going to require some more work to clean up and split the terminal into a reusable
+component, but I think it's the better solution in the long term.
+
+See https://github.com/rburchell/literm for the new code.
+
+---
+
 # about
 
 literm is a terminal emulator for Linux first and foremost, but it is also
